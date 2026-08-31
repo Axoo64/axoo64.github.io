@@ -59,7 +59,7 @@
 
   /* ---- hero ---- */
   .hero{
-    padding:9vh 6vw 8vh;
+    padding:clamp(48px, 9vh, 100px) 6vw clamp(40px, 8vh, 90px);
     text-align:center;
     position:relative;
     background:
@@ -123,13 +123,13 @@
     color:#c81e4a;
     font-size:0.82rem;
     text-decoration:underline;
-    padding:0 6vw 6vh;
+    padding:0 6vw clamp(30px, 6vh, 70px);
   }
 
-  section{ padding:7vh 6vw; }
+  section{ padding:clamp(40px, 7vh, 80px) 6vw; }
   .section-head{
     text-align:center;
-    margin-bottom:6vh;
+    margin-bottom:clamp(30px, 6vh, 70px);
   }
   .section-head .num{
     font-size:0.75rem;
@@ -197,7 +197,7 @@
     display:grid;
     grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
     gap:14px;
-    margin-bottom:8vh;
+    margin-bottom:clamp(40px, 8vh, 90px);
   }
   .narg-tier{
     text-align:center;
@@ -266,7 +266,7 @@
     background:var(--black);
     color:var(--white);
     text-align:center;
-    padding:9vh 6vw;
+    padding:clamp(48px, 9vh, 100px) 6vw;
   }
   .contact-band h2{ color:var(--white); margin-bottom:26px;}
   .contact-band p{ font-size:1.05rem; margin:6px 0; color:#eaeaea; }
@@ -283,7 +283,7 @@
   .map-embed:hover iframe, .map-embed:focus-within iframe{ filter:none; }
 
   footer{
-    padding:4vh 6vw;
+    padding:clamp(24px, 4vh, 50px) 6vw;
     display:flex;
     justify-content:space-between;
     flex-wrap:wrap;
