@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Le Duo — Lounge &amp; Food — Bayonne</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Work+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#171717;
+    --ink-dim:#6b6b6b;
+    --marble-bg:#f2f1ef;
+    --marble-vein:#d8d6d3;
+    --chrome:#9a9a9a;
+    --chrome-dark:#5c5c5c;
+    --black:#0a0a0a;
+    --white:#ffffff;
+    --accent-pink:#b81a68;
+    --ember:#8c3a26;  /* braise, cohérent avec le glow déjà utilisé ailleurs */
+    --line: rgba(10,10,10,0.12);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--marble-bg);
+    background-image:
+      repeating-linear-gradient(115deg, transparent 0 40px, rgba(0,0,0,0.02) 40px 41px, transparent 41px 90px);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    font-weight:300;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{
+    font-family:'Jost', sans-serif;
+    font-weight:400;
+    letter-spacing:0.06em;
+    margin:0;
+    text-transform:uppercase;
+  }
+  a{color:inherit;}
+  img{max-width:100%; display:block;}
+
+  .top-strip{
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:8px 24px;
+    padding:14px 6vw;
+    font-size:0.75rem;
+    color:var(--ink-dim);
+    border-bottom:1px solid var(--line);
+  }
+  .top-strip span{white-space:nowrap;}
+
+  /* ---- hero ---- */
+  .hero{
+    padding:9vh 6vw 8vh;
+    text-align:center;
+    position:relative;
+    background:
+      linear-gradient(180deg, rgba(242,241,239,0.12) 0%, rgba(242,241,239,0.65) 45%, var(--marble-bg) 78%),
+      url("photos/narguile-fumee.jpg") center 25%/cover;
+  }
+  .logo-frame{
+    display:inline-block;
+    padding:26px 56px;
+    border:1px solid var(--chrome);
+    background:
+      linear-gradient(100deg, rgba(255,255,255,0.6), rgba(0,0,0,0.04) 40%, rgba(255,255,255,0.5) 70%),
+      var(--marble-bg);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.4);
+  }
+  .logo-frame h1{
+    font-size:clamp(2.6rem, 8vw, 4.6rem);
+    letter-spacing:0.18em;
+    color:var(--black);
+  }
+  .hero .subtitle{
+    margin-top:22px;
+    font-family:'Jost', sans-serif;
+    letter-spacing:0.2em;
+    font-size:0.95rem;
+    color:var(--chrome-dark);
+  }
+  .hero p.lede{
+    max-width:46ch;
+    margin:26px auto 0;
+    font-size:1rem;
+    color:var(--ink-dim);
+  }
+  .hero .cta-row{
+    margin-top:32px;
+    display:flex;
+    gap:26px;
+    align-items:center;
+    justify-content:center;
+    flex-wrap:wrap;
+  }
+  .btn{
+    display:inline-block;
+    padding:13px 32px;
+    border:1px solid var(--black);
+    color:var(--black);
+    text-decoration:none;
+    font-family:'Jost', sans-serif;
+    font-size:0.82rem;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    transition:background .25s ease, color .25s ease;
+  }
+  .btn:hover{ background:var(--black); color:var(--white); }
+  .cta-row .hours{ font-size:0.82rem; color:var(--ink-dim); }
+  .cta-row .hours strong{ color:var(--ink); font-weight:500;}
+
+  /* warning strip like original ("toutes casses...") */
+  .notice{
+    text-align:center;
+    color:#c81e4a;
+    font-size:0.82rem;
+    text-decoration:underline;
+    padding:0 6vw 6vh;
+  }
+
+  section{ padding:7vh 6vw; }
+  .section-head{
+    text-align:center;
+    margin-bottom:6vh;
+  }
+  .section-head .num{
+    font-size:0.75rem;
+    letter-spacing:0.15em;
+    color:var(--ink-dim);
+    text-transform:uppercase;
+  }
+  .section-head h2{ font-size:clamp(1.6rem, 4vw, 2.2rem); margin-top:8px; }
+
+  /* ---- ambiance gallery ---- */
+  .gallery{
+    display:grid;
+    grid-template-columns: 1.3fr 1fr 1fr;
+    grid-template-rows: 220px 220px;
+    gap:8px;
+  }
+  .gallery > div{ overflow:hidden; background:var(--marble-vein); position:relative;}
+  .gallery img{ width:100%; height:100%; object-fit:cover; object-position:center 15%;}
+  .gallery .g1 img{ object-position:center 0%;}
+  .gallery .g1{ grid-row: 1 / 3; }
+  .gallery figcaption{
+    position:absolute; left:10px; bottom:8px;
+    font-size:0.68rem; color:var(--white); background:rgba(10,10,10,0.55);
+    padding:3px 8px; letter-spacing:0.02em;
+  }
+  .photo-note{
+    margin-top:20px;
+    font-size:0.78rem;
+    color:var(--ink-dim);
+    border-left:2px solid var(--accent-pink);
+    padding-left:14px;
+  }
+
+  /* ---- category band, like original grey "NOS NARGUILÉS" bar ---- */
+  .cat-band{
+    background:var(--chrome-dark);
+    color:var(--white);
+    text-align:center;
+    padding:16px 20px;
+    font-family:'Jost', sans-serif;
+    letter-spacing:0.22em;
+    font-size:1.1rem;
+    margin:0 0 34px;
+  }
+
+  .narg-tiers{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
+    gap:14px;
+    margin-bottom:8vh;
+  }
+  .narg-tier{
+    text-align:center;
+    padding:26px 18px;
+    border:1px solid var(--tier-color, rgba(10,10,10,0.28));
+    background:rgba(255,255,255,0.5);
+    transition:border-color .2s ease;
+  }
+  /* Une couleur très légère par formule, choisie pour ce qu'elle représente
+     plutôt qu'un classement par prix (Prestige à 15€ coûte moins cher que
+     Classique à 20€ : un dégradé du plus pâle au plus soutenu mentirait
+     sur le tarif). Naturel reste neutre : c'est la formule "sans rien
+     ajouté", l'absence de couleur lui va bien. */
+  /* La formule qui inclut Brohood/Kaloud (du matériel de gestion de
+     chauffe) prend le graphite ; celle qui inclut une boisson offerte
+     garde l'accent braise + la pulsation, en tant que formule la plus
+     complète (25€, prix le plus haut, vraie offre incluse). */
+  .narg-tier.naturel{ --tier-color:var(--chrome-dark); }
+  .narg-tier .tier-name{ font-family:'Jost', sans-serif; letter-spacing:0.08em; font-size:1.05rem; text-transform:uppercase;}
+  .narg-tier .tier-desc{ font-size:0.76rem; color:var(--ink-dim); display:block; margin-top:6px;}
+  .narg-tier .price{ display:block; margin-top:14px; font-size:1.3rem; color:var(--black); }
+
+  .carte-grid{
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap:50px 64px;
+    max-width:1000px;
+    margin:0 auto;
+  }
+  .carte-cat-photo{
+    width:100%; height:140px; object-fit:cover; display:block;
+    margin-bottom:18px;
+  }
+  .carte-cat h3{
+    font-size:1rem;
+    letter-spacing:0.12em;
+    margin-bottom:16px;
+    padding-bottom:10px;
+    border-bottom:1px solid var(--black);
+  }
+  .narg-photo{
+    width:100%; max-width:1000px; height:240px; object-fit:cover;
+    display:block; margin:0 auto 30px; object-position:center 30%;
+  }
+  .menu-line{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    padding:9px 0;
+    border-bottom:1px dotted var(--line);
+    font-size:0.92rem;
+  }
+  .menu-line .name{ color:var(--ink); }
+  .menu-line .tag{ display:block; font-size:0.75rem; color:var(--ink-dim); margin-top:2px;}
+  .menu-line .price{ color:var(--ink); white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .highlight{ color:var(--accent-pink); }
+  .special-block{
+    text-align:center;
+    margin-top:40px;
+    font-size:0.95rem;
+  }
+  .special-block .special-name{ color:var(--accent-pink); }
+
+  /* ---- contact — black band like the original screenshot ---- */
+  .contact-band{
+    background:var(--black);
+    color:var(--white);
+    text-align:center;
+    padding:9vh 6vw;
+  }
+  .contact-band h2{ color:var(--white); margin-bottom:26px;}
+  .contact-band p{ font-size:1.05rem; margin:6px 0; color:#eaeaea; }
+  .socials{ display:flex; gap:22px; justify-content:center; margin:30px 0; }
+  .socials a, .socials .social-handle{ font-size:0.78rem; letter-spacing:0.08em; border:1px solid #4a4a4a; padding:8px 16px; text-decoration:none; color:#eaeaea; }
+  .socials .social-handle{ color:#a8a8a8; cursor:default; }
+  .contact-band .hours-line{ font-family:'Jost', sans-serif; letter-spacing:0.1em; margin-top:20px;}
+  .map-embed{ margin-top:22px; border:1px solid #4a4a4a; line-height:0; }
+  .map-embed iframe{
+    width:100%; height:200px; border:0; display:block;
+    filter:grayscale(1) contrast(1.05) brightness(0.95);
+    transition:filter .25s ease;
+  }
+  .map-embed:hover iframe, .map-embed:focus-within iframe{ filter:none; }
+
+  footer{
+    padding:4vh 6vw;
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:12px;
+    font-size:0.75rem;
+    color:var(--ink-dim);
+  }
+  footer a{ color:var(--ink-dim); text-decoration:none; margin-left:16px;}
+  footer a:hover{ color:var(--black); }
+
+  @media (max-width: 780px){
+    .carte-grid{ grid-template-columns:1fr; gap:40px; }
+    .gallery{ grid-template-columns:1fr 1fr; grid-template-rows:260px 150px 150px;}
+    .gallery .g1{ grid-row:auto; grid-column: 1 / 3; }
+    .logo-frame{ padding:20px 30px; }
+  }
+
+  .maquette-flag{
+    position:fixed; bottom:0; left:0; right:0; z-index:50;
+    background:var(--chrome-dark); color:#fff;
+    font-size:0.72rem; text-align:center;
+    padding:8px 16px; letter-spacing:0.02em;
+  }
+  .maquette-flag b{ font-weight:500; }
+  body{ padding-bottom:36px; }
+
+  .smoke-layer{
+    position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:0;
+  }
+  .wisp{
+    position:absolute; bottom:-10%; border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,0.5), transparent 70%);
+    filter:blur(18px);
+    opacity:0;
+    animation:monter linear infinite;
+  }
+  .wisp:nth-child(1){ left:12%; width:180px; height:180px; animation-duration:14s; animation-delay:0s; }
+  .wisp:nth-child(2){ left:22%; width:120px; height:120px; animation-duration:11s; animation-delay:3s; }
+  .wisp:nth-child(3){ left:34%; width:220px; height:220px; animation-duration:17s; animation-delay:6s; }
+  .wisp:nth-child(4){ left:8%;  width:140px; height:140px; animation-duration:13s; animation-delay:9s; }
+  .wisp:nth-child(5){ left:28%; width:100px; height:100px; animation-duration:10s; animation-delay:1.5s; }
+  @keyframes monter{
+    0%   { transform:translate(0,0) scale(0.6); opacity:0; }
+    12%  { opacity:0.35; }
+    50%  { transform:translate(30px,-220px) scale(1.15); opacity:0.22; }
+    100% { transform:translate(60px,-480px) scale(1.5); opacity:0; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .wisp{ animation:none; opacity:0; }
+  }
+
+  .narg-tier.premium{
+    position:relative;
+    border-color:var(--ember);
+  }
+  .narg-tier.premium::before{
+    content:''; position:absolute; inset:-1px; border-radius:inherit;
+    box-shadow:0 0 0 0 rgba(140,58,38,0.45);
+    animation:braise 2.6s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes braise{
+    0%, 100% { box-shadow:0 0 0 0 rgba(140,58,38,0.35); }
+    50%      { box-shadow:0 0 14px 3px rgba(140,58,38,0.28); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .narg-tier.premium::before{ animation:none; box-shadow:0 0 10px 2px rgba(140,58,38,0.25); }
+  }
+
+  /* Points de couleur pris directement dans les photos des plats (fraise,
+     fleurs, mangue) — pas des couleurs de tendance, du vrai contenu. */
+  .carte-cat h3{ display:flex; align-items:center; gap:9px; }
+  /* Le point n'apparaît que pour les catégories où une vraie photo de plat
+     le justifie. Boissons chaudes et Softs n'en ont pas : plutôt qu'un gris
+     par défaut qui donnerait l'impression d'un oubli, pas de point du tout. */
+  .carte-cat.sucres h3::before, .carte-cat.glace h3::before, .carte-cat.chaudes h3::before, .carte-cat.softs h3::before{
+    content:''; width:8px; height:8px; border-radius:50%; flex-shrink:0;
+  }
+  .carte-cat.sucres h3::before{ background:#a1251f; }   /* rouge fraise, crepe.jpg */
+  .carte-cat.glace h3::before{ background:#e8bd4c; }    /* jaune mangue, mochi.jpg */
+  .carte-cat.chaudes h3::before{ background:#8a6a5c; }  /* moka/caramel, cafe.jpg (couche du cappuccino) */
+  .carte-cat.softs h3::before{ background:#c49044; }    /* orange pressée, orange.jpg */
+
+  /* ===== Formulaire de contact — leur vrai site en a un
+     (Prénom / Nom / Email / Message), notre maquette n'avait qu'un
+     bloc d'infos statique. ===== */
+  .contact-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:60px;
+    max-width:900px; margin:0 auto; text-align:left;
+  }
+  /* Sans ça, un champ de formulaire élargit toute la grille sous sa
+     largeur minimale de contenu par défaut (même bug déjà rencontré sur
+     les démos Garage/Palombière). */
+  .contact-grid > *{ min-width:0; }
+  .contact-form input, .contact-form textarea{ min-width:0; max-width:100%; box-sizing:border-box; }
+  .contact-infos{ text-align:center; }
+  .contact-form .field{ margin-bottom:16px; }
+  .contact-form label{
+    display:block; font-size:0.75rem; letter-spacing:0.08em; text-transform:uppercase;
+    color:#b8b8b8; margin-bottom:6px;
+  }
+  .contact-form input, .contact-form textarea{
+    width:100%; padding:12px 14px; font-family:'Work Sans', sans-serif; font-size:0.95rem;
+    background:rgba(255,255,255,0.06); color:var(--white);
+    border:1px solid #4a4a4a; border-radius:0;
+  }
+  .contact-form input:focus, .contact-form textarea:focus{ outline:none; border-color:var(--white); }
+  .contact-form textarea{ min-height:110px; resize:vertical; }
+  .contact-form .field.error input, .contact-form .field.error textarea{ border-color:#e0846f; }
+  .contact-form .field .msg{ display:none; font-size:0.72rem; color:#e0846f; margin-top:5px; }
+  .contact-form .field.error .msg{ display:block; }
+  .contact-form button{
+    width:100%; padding:13px; background:var(--white); color:var(--black); border:none;
+    font-family:'Jost', sans-serif; font-size:0.82rem; letter-spacing:0.1em; text-transform:uppercase;
+    cursor:pointer; transition:background .2s ease;
+  }
+  .contact-form button:hover{ background:#d8d8d8; }
+  .contact-form button:disabled{ opacity:0.6; cursor:default; }
+  .contact-sent{ display:none; text-align:left; }
+  .contact-sent.show{ display:block; }
+  .contact-sent h3{ color:var(--white); font-size:1.1rem; margin-bottom:10px; }
+  .contact-sent p{ font-size:0.9rem; color:#cfcfcf; }
+  @media (max-width:780px){
+    .contact-grid{ grid-template-columns:1fr; gap:36px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="top-strip">
+    <span>15/17 Rue des Pontots, 64 100 Bayonne</span>
+    <span>Ouvert 15h – 01h30 · Fermé le lundi</span>
+    <span>07 88 90 92 96</span>
+  </div>
+
+  <header class="hero" style="position:relative;">
+    <div class="smoke-layer" aria-hidden="true">
+      <div class="wisp"></div><div class="wisp"></div><div class="wisp"></div>
+      <div class="wisp"></div><div class="wisp"></div>
+    </div>
+    <div style="position:relative; z-index:1;">
+    <div class="logo-frame"><img src="photos/logo.jpg" alt="Le Duo" style="display:block; width:clamp(220px, 32vw, 420px); height:auto; mix-blend-mode:multiply;"></div>
+    <div class="subtitle">Lounge &amp; Food</div>
+    <p class="lede">Narguilé, boissons chaudes et douceurs faites maison, au cœur de Bayonne — ouvert jusqu'à tard dans la nuit.</p>
+    <div class="cta-row">
+      <a href="#carte" class="btn">Voir la carte</a>
+      <div class="hours">Aujourd'hui : <strong>15h – 01h30</strong></div>
+    </div>
+  </div>
+  </header>
+
+  <p class="notice">Toutes casses ou dégradation vous sera facturée</p>
+
+  <section id="ambiance" style="background-image:url('photos/cerisier-fond.png'); background-position:top left; background-repeat:no-repeat; background-size:620px auto;">
+    <div class="section-head">
+      <span class="num">L'ambiance</span>
+      <h2>Le lieu</h2>
+    </div>
+    <div class="gallery">
+      <div class="g1"><img loading="lazy" src="photos/salle-neon-complet.jpg" alt="L'enseigne LE DUO et le salon"></div>
+      <div><img loading="lazy" src="photos/narguile-fumee.jpg" alt="Narguilé Quasar"></div>
+      <div><img loading="lazy" src="photos/cafe.jpg" alt="Cafés et boissons chaudes"></div>
+      <div><img loading="lazy" src="photos/crepe.jpg" alt="Crêpe maison"></div>
+      <div><img loading="lazy" src="photos/mochi.jpg" alt="Nos douceurs glacées"></div>
+    </div>
+    <p class="photo-note">Photos réelles du lieu (Instagram @le_duo64).</p>
+  </section>
+
+  <section id="carte">
+    <div class="cat-band">Nos Narguilés</div>
+    <img class="narg-photo" loading="lazy" src="photos/narguile-quasar.jpg" alt="Narguilé Quasar sur table en marbre">
+    <div class="narg-tiers">
+      <div class="narg-tier"><span class="tier-name">Classique</span><span class="price">12 €</span></div>
+      <div class="narg-tier naturel"><span class="tier-name">Naturel</span><span class="tier-desc">Brohood ou Kaloud</span><span class="price">15 €</span></div>
+      <div class="narg-tier"><span class="tier-name">Premium Quasar</span><span class="price">20 €</span></div>
+      <div class="narg-tier premium"><span class="tier-name">Prestige Quasar</span><span class="tier-desc">+ une boisson au choix offerte</span><span class="price">25 €</span></div>
+    </div>
+
+    <div class="section-head">
+      <span class="num">La carte</span>
+      <h2>Drinks &amp; Food</h2>
+    </div>
+
+    <div class="carte-grid">
+      <div class="carte-cat chaudes">
+        <img class="carte-cat-photo" loading="lazy" src="photos/cafe-latte.jpg" alt="Latte et cerisiers">
+        <h3>Boissons chaudes</h3>
+        <div class="menu-line"><span class="name">Expresso « Café Ximun »<span class="tag">Arabica, notes de fruits secs</span></span><span class="price">1,50 €</span></div>
+        <div class="menu-line"><span class="name">Café allongé</span><span class="price">2 €</span></div>
+        <div class="menu-line"><span class="name">Cappuccino</span><span class="price">3 €</span></div>
+        <div class="menu-line"><span class="name">Caramel macchiato<span class="tag">chaud ou froid</span></span><span class="price">4 €</span></div>
+        <div class="menu-line"><span class="name">Chocolat chaud « Monbana »</span><span class="price">3 €</span></div>
+        <div class="menu-line"><span class="name">Chocolat chaud viennois</span><span class="price">3,50 €</span></div>
+        <div class="menu-line"><span class="name">Thé à la menthe<span class="tag">1 pers. / 3 pers. : 7 €</span></span><span class="price">3,50 €</span></div>
+        <div class="menu-line"><span class="name">Thé infusion « Kusmi Tea »</span><span class="price">3 €</span></div>
+      </div>
+
+      <div class="carte-cat softs">
+        <img class="carte-cat-photo" loading="lazy" src="photos/orange.jpg" alt="Jus d'orange pressé">
+        <h3>Nos Softs</h3>
+        <div class="menu-line"><span class="name">Coca cola, zéro, cherry</span><span class="price">3 €</span></div>
+        <div class="menu-line"><span class="name">Ice tea</span><span class="price">3 €</span></div>
+        <div class="menu-line"><span class="name">Limonade</span><span class="price">3 €</span></div>
+        <div class="menu-line"><span class="name">Schweppes</span><span class="price">3 €</span></div>
+        <div class="menu-line"><span class="name">Oasis</span><span class="price">3 €</span></div>
+        <div class="menu-line"><span class="name">Mogu Mogu</span><span class="price">3 €</span></div>
+        <div class="menu-line"><span class="name">Redbull</span><span class="price">3,50 €</span></div>
+        <div class="menu-line"><span class="name">Eau</span><span class="price">2 €</span></div>
+        <div class="menu-line"><span class="name">Perrier</span><span class="price">3 €</span></div>
+        <div class="menu-line"><span class="name">Sirop</span><span class="price">2 €</span></div>
+        <div class="menu-line"><span class="name">Jus pago</span><span class="price">3 €</span></div>
+      </div>
+
+      <div class="carte-cat sucres">
+        <img class="carte-cat-photo" loading="lazy" src="photos/crepe-menu.jpg" alt="Crêpe aux fraises">
+        <h3>Nos Sucrés</h3>
+        <p style="color:var(--accent-pink); font-size:0.8rem; margin:-4px 0 14px;">À partir de 16h00</p>
+        <div class="menu-line"><span class="name">Brioche perdue caramel<span class="tag">Glace vanille, chantilly</span></span><span class="price">5 €</span></div>
+        <div class="menu-line"><span class="name">Brioche perdue nutella<span class="tag">Glace vanille, chantilly</span></span><span class="price">5 €</span></div>
+        <div class="menu-line"><span class="name">Crêpe au sucre</span><span class="price">3,50 €</span></div>
+        <div class="menu-line"><span class="name">Crêpe au caramel chantilly</span><span class="price">4 €</span></div>
+        <div class="menu-line"><span class="name">Crêpe au miel chantilly</span><span class="price">4 €</span></div>
+        <div class="menu-line"><span class="name">Crêpe nutella chantilly</span><span class="price">4 €</span></div>
+        <div class="menu-line"><span class="name">Crêpe nutella banane chantilly</span><span class="price">5 €</span></div>
+        <div class="menu-line"><span class="name">Gaufre au sucre</span><span class="price">3,50 €</span></div>
+        <div class="menu-line"><span class="name">Gaufre nutella chantilly</span><span class="price">4 €</span></div>
+        <div class="menu-line"><span class="name">Supp. chantilly</span><span class="price">0,50 €</span></div>
+        <div class="menu-line"><span class="name">Supp. 1 boule de glace</span><span class="price">1 €</span></div>
+        <div class="menu-line"><span class="name">Supp. nutella</span><span class="price">0,50 €</span></div>
+        <div class="menu-line"><span class="name">Supp. banane</span><span class="price">1 €</span></div>
+        <div class="menu-line"><span class="name">Fondant au chocolat</span><span class="price">4,50 €</span></div>
+      </div>
+
+      <div class="carte-cat glace">
+        <img class="carte-cat-photo" loading="lazy" src="photos/mochi-menu.jpg" alt="Mochis glacés et fleurs comestibles">
+        <h3>Glacé</h3>
+        <div class="menu-line"><span class="name">2 boules de glace<span class="tag">Mangue, vanille, cookie, citron vert, noisette, caramel, fraise, yaourt</span></span><span class="price">3 €</span></div>
+        <div class="menu-line"><span class="name">Mochi glacé x2</span><span class="price">3,50 €</span></div>
+      </div>
+    </div>
+
+    <div class="special-block">
+      Le smoothie du moment : <span class="special-name">Banane, fruits rouges, yaourt</span> — 5 €<br>
+      Le frappé du moment : <span class="special-name">Vanille</span> (avec chantilly) — 5 €
+    </div>
+  </section>
+
+  <section class="contact-band" id="contact">
+    <h2>Contactez-nous</h2>
+    <div class="contact-grid">
+      <div class="contact-infos">
+        <p>15/17 Rue des Pontots</p>
+        <p>64 100 Bayonne.</p>
+        <div class="socials">
+          <a href="https://instagram.com/le_duo64" target="_blank" rel="noopener noreferrer">Instagram</a>
+          <span class="social-handle" title="Ajoutez-nous dans l'app Snapchat">Snapchat · le-duo64</span>
+          <a href="https://www.tiktok.com/@le_duo64" target="_blank" rel="noopener noreferrer">TikTok</a>
+        </div>
+        <div class="hours-line">Horaires : 15h – 01h30</div>
+        <div class="map-embed">
+          <iframe src="https://www.google.com/maps?q=15%2F17+Rue+des+Pontots%2C+64100+Bayonne&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Localisation du Duo — 15/17 Rue des Pontots, Bayonne"></iframe>
+        </div>
+      </div>
+      <div>
+        <form class="contact-form" id="contactForm" novalidate>
+          <div class="field" id="f-prenom">
+            <label for="prenom">Prénom</label>
+            <input type="text" id="prenom" autocomplete="given-name">
+            <span class="msg">Merci d'indiquer votre prénom.</span>
+          </div>
+          <div class="field" id="f-nom">
+            <label for="nomFamille">Nom de famille</label>
+            <input type="text" id="nomFamille" autocomplete="family-name">
+            <span class="msg">Merci d'indiquer votre nom.</span>
+          </div>
+          <div class="field" id="f-email">
+            <label for="emailContact">E-mail *</label>
+            <input type="email" id="emailContact" autocomplete="email">
+            <span class="msg">Merci d'indiquer un email valide.</span>
+          </div>
+          <div class="field" id="f-message">
+            <label for="messageContact">Contacter</label>
+            <textarea id="messageContact"></textarea>
+            <span class="msg">Merci d'indiquer votre message.</span>
+          </div>
+          <button type="submit" id="contactSubmit">Envoyer</button>
+        </form>
+        <div class="contact-sent" id="contactSent">
+          <h3 id="sentTitre">Message prêt à partir</h3>
+          <p id="sentTexte"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Le Duo — Bayonne</span>
+    <div><a href="#ambiance">Ambiance</a><a href="#carte">Carte</a><a href="#contact">Contact</a></div>
+  </footer>
+
+  <div class="maquette-flag"><b>Maquette de démonstration</b> — non affiliée au Duo, réalisée à titre d'exemple</div>
+
+<script>
+const CONTACT_EMAIL = 'contact@leduo64.com'; // à confirmer avec le vrai contact du Duo
+
+const contactForm = document.getElementById('contactForm');
+const contactSent = document.getElementById('contactSent');
+const contactSubmit = document.getElementById('contactSubmit');
+
+function setErreur(id, actif){
+  const champ = document.getElementById(id);
+  if(champ) champ.classList.toggle('error', actif);
+}
+function emailValide(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+contactForm.addEventListener('submit', function(e){
+  e.preventDefault();
+  const prenom = document.getElementById('prenom').value.trim();
+  const nom = document.getElementById('nomFamille').value.trim();
+  const email = document.getElementById('emailContact').value.trim();
+  const message = document.getElementById('messageContact').value.trim();
+
+  const okPrenom = prenom.length > 0;
+  const okEmail = emailValide(email);
+  const okMessage = message.length > 0;
+  setErreur('f-prenom', !okPrenom);
+  setErreur('f-email', !okEmail);
+  setErreur('f-message', !okMessage);
+  if(!okPrenom || !okEmail || !okMessage){
+    const premier = contactForm.querySelector('.error input, .error textarea');
+    if(premier) premier.focus();
+    return;
+  }
+
+  contactSubmit.disabled = true;
+  contactSubmit.textContent = 'Envoi...';
+
+  // Pas de backend ici (maquette) : on passe par mailto, et on détecte si
+  // un vrai client mail a pris la main avant d'afficher une confirmation —
+  // même logique que sur les sites livrés, pour ne jamais faire croire
+  // qu'un message est parti s'il ne l'est pas.
+  let passee = false;
+  const noter = () => { passee = true; };
+  window.addEventListener('blur', noter);
+  document.addEventListener('visibilitychange', noter);
+
+  const sujet = encodeURIComponent('Contact depuis le site — ' + prenom + ' ' + nom);
+  const corps = encodeURIComponent('Prénom : ' + prenom + '\nNom : ' + nom + '\nEmail : ' + email + '\n\n' + message);
+  window.location.href = 'mailto:' + CONTACT_EMAIL + '?subject=' + sujet + '&body=' + corps;
+
+  setTimeout(() => {
+    window.removeEventListener('blur', noter);
+    document.removeEventListener('visibilitychange', noter);
+    const abouti = passee || document.hidden;
+    document.getElementById('sentTitre').textContent =
+      abouti ? 'Message prêt à partir' : "Le message n'a pas pu être envoyé";
+    document.getElementById('sentTexte').textContent = abouti
+      ? "Votre client email va s'ouvrir avec votre message déjà rédigé."
+      : "Aucune application mail ne s'est ouverte. Appelez-nous directement au 07 88 90 92 96.";
+    contactForm.style.display = 'none';
+    contactSent.classList.add('show');
+    contactSubmit.disabled = false;
+    contactSubmit.textContent = 'Envoyer';
+  }, 1200);
+});
+</script>
+</body>
+</html>
