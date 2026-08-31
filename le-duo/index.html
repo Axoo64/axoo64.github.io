@@ -145,8 +145,10 @@
     grid-template-columns: 1.3fr 1fr 1fr;
     grid-template-rows: 220px 220px;
     gap:8px;
+    max-width:1100px;
+    margin:0 auto;
   }
-  .gallery > div{ overflow:hidden; background:var(--marble-vein); position:relative;}
+  .gallery > div{ overflow:hidden; background:var(--marble-vein); position:relative; cursor:pointer;}
   .gallery img{ width:100%; height:100%; object-fit:cover; object-position:center 15%;}
   .gallery .g1 img{ object-position:center 0%;}
   .gallery .g1{ grid-row: 1 / 3; }
@@ -161,6 +163,22 @@
     color:var(--ink-dim);
     border-left:2px solid var(--accent-pink);
     padding-left:14px;
+  }
+
+  /* ---- lightbox : clic sur une photo de la galerie pour l'agrandir ---- */
+  .lightbox{
+    position:fixed; inset:0; background:rgba(10,10,10,0.92);
+    display:none; align-items:center; justify-content:center;
+    z-index:999; padding:5vh 5vw; cursor:zoom-out;
+  }
+  .lightbox.show{ display:flex; }
+  .lightbox img{
+    max-width:100%; max-height:100%; object-fit:contain; display:block;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5); cursor:default;
+  }
+  .lightbox-close{
+    position:absolute; top:18px; right:26px; color:#fff; font-size:2.2rem; line-height:1;
+    cursor:pointer; font-family:'Jost', sans-serif; font-weight:300;
   }
 
   /* ---- category band, like original grey "NOS NARGUILÉS" bar ---- */
@@ -526,7 +544,7 @@
         </div>
         <div class="hours-line">Horaires : 15h – 01h30</div>
         <div class="map-embed">
-          <iframe src="https://www.google.com/maps?q=15%2F17+Rue+des+Pontots%2C+64100+Bayonne&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Localisation du Duo — 15/17 Rue des Pontots, Bayonne"></iframe>
+          <iframe src="https://www.google.com/maps?q=Le+Duo+Lounge+%26+Food%2C+Bayonne&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Localisation du Duo — 15/17 Rue des Pontots, Bayonne"></iframe>
         </div>
       </div>
       <div>
@@ -568,7 +586,26 @@
 
   <div class="maquette-flag"><b>Maquette de démonstration</b> — non affiliée au Duo, réalisée à titre d'exemple</div>
 
+  <div class="lightbox" id="lightbox">
+    <span class="lightbox-close" id="lightboxClose" aria-label="Fermer">&times;</span>
+    <img id="lightboxImg" src="" alt="">
+  </div>
+
 <script>
+// Galerie "L'ambiance" : clic sur une photo pour l'agrandir.
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightboxImg');
+document.querySelectorAll('.gallery img').forEach(img => {
+  img.addEventListener('click', () => {
+    lightboxImg.src = img.src;
+    lightboxImg.alt = img.alt;
+    lightbox.classList.add('show');
+  });
+});
+lightbox.addEventListener('click', () => lightbox.classList.remove('show'));
+document.getElementById('lightboxClose').addEventListener('click', () => lightbox.classList.remove('show'));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') lightbox.classList.remove('show'); });
+
 const CONTACT_EMAIL = 'contact@leduo64.com'; // à confirmer avec le vrai contact du Duo
 
 const contactForm = document.getElementById('contactForm');
