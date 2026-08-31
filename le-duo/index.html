@@ -259,6 +259,11 @@
   .menu-line .tag{ display:block; font-size:0.75rem; color:var(--ink-dim); margin-top:2px;}
   .menu-line .price{ color:var(--ink); white-space:nowrap; font-variant-numeric:tabular-nums; }
   .highlight{ color:var(--accent-pink); }
+  .menu-footnotes{
+    margin-top:14px; padding-top:12px; border-top:1px dotted var(--line);
+    font-size:0.72rem; color:var(--ink-dim); font-style:italic; line-height:1.5;
+  }
+  .menu-footnotes p{ margin:4px 0; }
   .special-block{
     text-align:center;
     margin-top:40px;
@@ -459,7 +464,7 @@
 
   <div class="top-strip">
     <span>15/17 Rue des Pontots, 64 100 Bayonne</span>
-    <span>Ouvert 15h – 01h30 · Fermé le lundi</span>
+    <span>Ouvert 15h – 01h30 · 7j/7</span>
     <span>07 88 90 92 96</span>
   </div>
 
@@ -515,24 +520,28 @@
       <div class="carte-cat chaudes reveal">
         <img class="carte-cat-photo" loading="lazy" src="photos/cafe-latte.jpg" alt="Latte et cerisiers">
         <h3>Boissons chaudes</h3>
-        <div class="menu-line"><span class="name">Expresso « Café Ximun »<span class="tag">Arabica, notes de fruits secs</span></span><span class="price">1,50 €</span></div>
+        <div class="menu-line"><span class="name">Expresso « Café Ximun » *</span><span class="price">1,50 €</span></div>
         <div class="menu-line"><span class="name">Café allongé</span><span class="price">2 €</span></div>
         <div class="menu-line"><span class="name">Cappuccino</span><span class="price">3 €</span></div>
         <div class="menu-line"><span class="name">Caramel macchiato<span class="tag">chaud ou froid</span></span><span class="price">4 €</span></div>
-        <div class="menu-line"><span class="name">Chocolat chaud « Monbana »</span><span class="price">3 €</span></div>
+        <div class="menu-line"><span class="name">Chocolat chaud « Monbana » **</span><span class="price">3 €</span></div>
         <div class="menu-line"><span class="name">Chocolat chaud viennois</span><span class="price">3,50 €</span></div>
         <div class="menu-line"><span class="name">Thé à la menthe<span class="tag">1 pers. / 3 pers. : 7 €</span></span><span class="price">3,50 €</span></div>
-        <div class="menu-line"><span class="name">Thé infusion « Kusmi Tea »</span><span class="price">3 €</span></div>
+        <div class="menu-line"><span class="name">Thé infusion « Kusmi Tea » ***</span><span class="price">3 €</span></div>
+        <div class="menu-footnotes">
+          <p>* Café 100% Arabica gourmand et harmonieux, notes de fruits secs et à un corps intense et chocolaté.</p>
+          <p>** Chocolatier Monbana depuis 1964.</p>
+          <p>*** Grande maison de thé depuis 1867.</p>
+        </div>
       </div>
 
       <div class="carte-cat softs reveal">
         <img class="carte-cat-photo" loading="lazy" src="photos/orange.jpg" alt="Jus d'orange pressé">
         <h3>Nos Softs</h3>
-        <div class="menu-line"><span class="name">Coca cola, zéro, cherry</span><span class="price">3 €</span></div>
-        <div class="menu-line"><span class="name">Ice tea</span><span class="price">3 €</span></div>
+        <div class="menu-line"><span class="name">Coca, Coca Cherry</span><span class="price">3 €</span></div>
+        <div class="menu-line"><span class="name">Coca Zéro</span><span class="price">3 €</span></div>
+        <div class="menu-line"><span class="name">Ice Tea, Oasis</span><span class="price">3 €</span></div>
         <div class="menu-line"><span class="name">Limonade</span><span class="price">3 €</span></div>
-        <div class="menu-line"><span class="name">Schweppes</span><span class="price">3 €</span></div>
-        <div class="menu-line"><span class="name">Oasis</span><span class="price">3 €</span></div>
         <div class="menu-line"><span class="name">Mogu Mogu</span><span class="price">3 €</span></div>
         <div class="menu-line"><span class="name">Redbull</span><span class="price">3,50 €</span></div>
         <div class="menu-line"><span class="name">Eau</span><span class="price">2 €</span></div>
@@ -544,34 +553,33 @@
       <div class="carte-cat sucres reveal">
         <img class="carte-cat-photo" loading="lazy" src="photos/crepe-menu.jpg" alt="Crêpe aux fraises">
         <h3>Nos Sucrés</h3>
-        <p style="color:var(--accent-pink); font-size:0.8rem; margin:-4px 0 14px;">À partir de 16h00</p>
-        <div class="menu-line"><span class="name">Brioche perdue caramel<span class="tag">Glace vanille, chantilly</span></span><span class="price">5 €</span></div>
-        <div class="menu-line"><span class="name">Brioche perdue nutella<span class="tag">Glace vanille, chantilly</span></span><span class="price">5 €</span></div>
         <div class="menu-line"><span class="name">Crêpe au sucre</span><span class="price">3,50 €</span></div>
         <div class="menu-line"><span class="name">Crêpe au caramel chantilly</span><span class="price">4 €</span></div>
         <div class="menu-line"><span class="name">Crêpe au miel chantilly</span><span class="price">4 €</span></div>
-        <div class="menu-line"><span class="name">Crêpe nutella chantilly</span><span class="price">4 €</span></div>
-        <div class="menu-line"><span class="name">Crêpe nutella banane chantilly</span><span class="price">5 €</span></div>
-        <div class="menu-line"><span class="name">Gaufre au sucre</span><span class="price">3,50 €</span></div>
-        <div class="menu-line"><span class="name">Gaufre nutella chantilly</span><span class="price">4 €</span></div>
+        <div class="menu-line"><span class="name">Crêpe au nutella chantilly</span><span class="price">4 €</span></div>
+        <div class="menu-line"><span class="name">Crêpe au nutella banane chantilly</span><span class="price">5 €</span></div>
         <div class="menu-line"><span class="name">Supp. chantilly</span><span class="price">0,50 €</span></div>
         <div class="menu-line"><span class="name">Supp. 1 boule de glace</span><span class="price">1 €</span></div>
         <div class="menu-line"><span class="name">Supp. nutella</span><span class="price">0,50 €</span></div>
         <div class="menu-line"><span class="name">Supp. banane</span><span class="price">1 €</span></div>
+        <div class="menu-line"><span class="name">Gaufre au sucre</span><span class="price">3,50 €</span></div>
+        <div class="menu-line"><span class="name">Gaufre au nutella chantilly</span><span class="price">4 €</span></div>
         <div class="menu-line"><span class="name">Fondant au chocolat</span><span class="price">4,50 €</span></div>
+        <div class="menu-footnotes">
+          <p>* Nos crêpes sont faites maison.</p>
+        </div>
       </div>
 
       <div class="carte-cat glace reveal">
         <img class="carte-cat-photo" loading="lazy" src="photos/mochi-menu.jpg" alt="Mochis glacés et fleurs comestibles">
         <h3>Glacé</h3>
-        <div class="menu-line"><span class="name">2 boules de glace<span class="tag">Mangue, vanille, cookie, citron vert, noisette, caramel, fraise, yaourt</span></span><span class="price">3 €</span></div>
+        <div class="menu-line"><span class="name">Boules de glace x2<span class="tag">Mangue, citron vert, straciatella, vanille, noisette, caramel</span></span><span class="price">3 €</span></div>
         <div class="menu-line"><span class="name">Mochi glacé x2</span><span class="price">3,50 €</span></div>
       </div>
     </div>
 
     <div class="special-block">
-      Le smoothie du moment : <span class="special-name">Banane, fruits rouges, yaourt</span> — 5 €<br>
-      Le frappé du moment : <span class="special-name">Vanille</span> (avec chantilly) — 5 €
+      Le smoothie du moment : <span class="special-name">Maracuja, Ananas, Banane, Yaourt</span> — 5 €
     </div>
   </section>
 
