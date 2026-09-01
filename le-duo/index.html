@@ -353,8 +353,14 @@
     font-size:0.75rem;
     color:var(--ink-dim);
   }
-  footer a{ color:var(--ink-dim); text-decoration:none; margin-left:16px;}
-  footer a:hover{ color:var(--black); }
+  footer a, footer button{ color:var(--ink-dim); text-decoration:none; margin-left:16px;}
+  footer a:hover, footer button:hover{ color:var(--black); }
+  /* Bouton (et non lien) car il déclenche une action, pas une navigation —
+     mais calqué visuellement sur les liens voisins. */
+  footer button{
+    background:none; border:none; padding:0; cursor:pointer;
+    font-family:inherit; font-size:inherit; letter-spacing:inherit;
+  }
 
   @media (max-width: 780px){
     .carte-grid{ grid-template-columns:1fr; gap:40px; }
@@ -660,12 +666,10 @@
         </div>
         <p class="social-note">Snapchat : le-duo64</p>
         <div class="hours-line">Horaires : 15h – 01h30</div>
-        <div class="map-embed" id="mapEmbed" data-map-src="https://www.google.com/maps?q=Le+Duo+Lounge+%26+Food%2C+Bayonne&output=embed">
-          <div class="map-placeholder" id="mapPlaceholder">
-            <p>La carte utilise des cookies Google Maps.</p>
-            <button type="button" id="mapConsentBtn">Afficher la carte</button>
-          </div>
-        </div>
+        <!-- Contenu rempli par renderMap() selon le consentement : carte,
+             bloc "refusé", ou invitation à afficher. Volontairement vide
+             ici pour qu'un seul et même code décide de l'affichage. -->
+        <div class="map-embed" id="mapEmbed" data-map-src="https://www.google.com/maps?q=Le+Duo+Lounge+%26+Food%2C+Bayonne&output=embed"></div>
       </div>
       <div>
         <form class="contact-form" id="contactForm" novalidate>
@@ -701,7 +705,10 @@
 
   <footer>
     <span>Le Duo — Bayonne</span>
-    <div><a href="#ambiance">Ambiance</a><a href="#carte">Carte</a><a href="#contact">Contact</a></div>
+    <div>
+      <a href="#ambiance">Ambiance</a><a href="#carte">Carte</a><a href="#contact">Contact</a>
+      <button type="button" id="cookieSettings">Gérer les cookies</button>
+    </div>
   </footer>
 
   <div class="bottom-stack">
@@ -740,28 +747,48 @@ if (preloader) {
 // explicitement accepté — que ce soit via le bandeau ou directement via
 // le bouton sur la carte elle-même (même action, même mémorisation).
 const mapEmbed = document.getElementById('mapEmbed');
-const mapPlaceholder = document.getElementById('mapPlaceholder');
 const cookieBanner = document.getElementById('cookieBanner');
+const MAP_LINK = 'https://www.google.com/maps/search/?api=1&query=Le+Duo+Lounge+%26+Food+Bayonne';
 
 // (L'empilement des deux barres du bas est désormais géré uniquement en
 // CSS, via .bottom-stack — plus aucune position calculée ici.)
 let consent = null;
 try { consent = localStorage.getItem('leduo_cookie_consent'); } catch (e) {}
 
-function loadMap() {
-  const src = mapEmbed.getAttribute('data-map-src');
-  const iframe = document.createElement('iframe');
-  iframe.src = src;
-  iframe.loading = 'lazy';
-  iframe.referrerPolicy = 'no-referrer-when-downgrade';
-  iframe.title = 'Localisation du Duo — 15/17 Rue des Pontots, Bayonne';
+// La zone carte est TOUJOURS reconstruite à partir de l'état courant,
+// plutôt que modifiée par petites touches. Avant, une fois l'iframe
+// chargée, le bloc "carte refusée" écrivait dans un élément qui n'était
+// plus dans la page (détruit par le chargement de la carte) : passer de
+// "accepté" à "refusé" n'affichait donc rien. Repartir du même point à
+// chaque fois supprime toute cette catégorie de bug, et rend le choix
+// réversible depuis le pied de page.
+function renderMap() {
   mapEmbed.innerHTML = '';
-  mapEmbed.appendChild(iframe);
+  if (consent === 'accepted') {
+    const iframe = document.createElement('iframe');
+    iframe.src = mapEmbed.getAttribute('data-map-src');
+    iframe.loading = 'lazy';
+    iframe.referrerPolicy = 'no-referrer-when-downgrade';
+    iframe.title = 'Localisation du Duo — 15/17 Rue des Pontots, Bayonne';
+    mapEmbed.appendChild(iframe);
+    return;
+  }
+  const box = document.createElement('div');
+  box.className = 'map-placeholder';
+  if (consent === 'refused') {
+    box.innerHTML = '<p>Carte non affichée (cookies refusés).</p>' +
+      '<a href="' + MAP_LINK + '" target="_blank" rel="noopener noreferrer">Voir sur Google Maps</a>';
+  } else {
+    box.innerHTML = '<p>La carte utilise des cookies Google Maps.</p>';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = 'Afficher la carte';
+    btn.addEventListener('click', () => setConsent('accepted'));
+    box.appendChild(btn);
+  }
+  mapEmbed.appendChild(box);
 }
-function showRefusedPlaceholder() {
-  mapPlaceholder.innerHTML = '<p>Carte non affichée (cookies refusés).</p>' +
-    '<a href="https://www.google.com/maps/search/?api=1&query=Le+Duo+Lounge+%26+Food+Bayonne" target="_blank" rel="noopener noreferrer">Voir sur Google Maps</a>';
-}
+
 let bannerShowTimer = null;
 function setConsent(value) {
   consent = value;
@@ -770,24 +797,25 @@ function setConsent(value) {
                                  // choix a déjà été fait entre-temps (ex. via le
                                  // bouton "Afficher la carte" cliqué avant les 1.2s)
   cookieBanner.classList.add('hidden');
-  if (value === 'accepted') loadMap(); else showRefusedPlaceholder();
+  renderMap();
 }
 
-// Les écouteurs sont attachés AVANT loadMap()/showRefusedPlaceholder(),
-// qui remplacent le contenu du placeholder (donc #mapConsentBtn) quand
-// un consentement est déjà mémorisé — sinon, sur un rechargement avec
-// consentement déjà donné, ce bouton n'existe plus au moment de lire
-// son id, et la ligne plantait (erreur qui coupait tout le reste du
-// script, cookies compris).
+// Permet de revenir sur son choix à tout moment (le RGPD impose que le
+// consentement puisse être retiré aussi facilement qu'il a été donné).
+function reopenCookieChoice() {
+  consent = null;
+  try { localStorage.removeItem('leduo_cookie_consent'); } catch (e) {}
+  renderMap(); // décharge l'iframe Google si elle était affichée
+  cookieBanner.classList.remove('hidden');
+  cookieBanner.scrollIntoView({ block: 'nearest' });
+}
+
 document.getElementById('cookieAccept').addEventListener('click', () => setConsent('accepted'));
 document.getElementById('cookieRefuse').addEventListener('click', () => setConsent('refused'));
-document.getElementById('mapConsentBtn').addEventListener('click', () => setConsent('accepted'));
+document.getElementById('cookieSettings').addEventListener('click', reopenCookieChoice);
 
-if (consent === 'accepted') {
-  loadMap();
-} else if (consent === 'refused') {
-  showRefusedPlaceholder();
-} else {
+renderMap();
+if (consent !== 'accepted' && consent !== 'refused') {
   bannerShowTimer = setTimeout(() => cookieBanner.classList.remove('hidden'), 1200);
 }
 
