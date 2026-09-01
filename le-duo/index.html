@@ -731,12 +731,6 @@
       <a href="#ambiance">Ambiance</a><a href="#carte">Carte</a><a href="#contact">Contact</a>
       <button type="button" id="cookieSettings">Gérer les cookies</button>
     </div>
-    <!-- Crédit obligatoire : le modèle 3D est sous licence CC-BY-4.0,
-         qui autorise l'usage commercial à condition de citer l'auteur. -->
-    <p class="credit-3d">Modèle 3D « Hookah » par
-      <a href="https://sketchfab.com/artyrey" target="_blank" rel="noopener noreferrer">artyrey</a>,
-      licence <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC-BY-4.0</a>.
-    </p>
   </footer>
 
   <div class="bottom-stack">
@@ -945,17 +939,21 @@ contactForm.addEventListener('submit', function(e){
 </script>
 
 <!-- Narguilé 3D affiché pendant l'écran de chargement, puis retiré.
-     Module séparé et isolé : s'il échoue (pas de WebGL, réseau, vieux
-     navigateur qui ignore type="module"), l'écran de chargement
-     disparaît quand même — c'est le CSS qui en a la charge, jamais ce
-     script. -->
+     Le modèle est CONSTRUIT ici à partir de formes simples, d'après les
+     photos du Quasar réellement utilisé au Duo. Un modèle générique
+     trouvé en ligne représentait une chicha traditionnelle (vase bulbeux,
+     fût ouvragé), sans rapport avec leur matériel : une texture n'y
+     aurait rien changé, c'est la forme qui diffère. Construire la forme
+     évite au passage 1,6 Mo de téléchargement, une bibliothèque de
+     chargement supplémentaire, et toute contrainte de licence.
+     Module isolé : s'il échoue, l'écran de chargement s'efface quand
+     même — c'est le CSS qui en a la charge, jamais ce script. -->
 <script type="module">
 (() => {
   const pre = document.getElementById('preloader');
   const holder = document.getElementById('preloader3d');
   if (!pre) return;
 
-  // Escamote l'écran de chargement plus tôt que le filet de sécurité CSS.
   let closed = false;
   const close = () => { if (!closed) { closed = true; pre.classList.add('done'); } };
 
@@ -966,15 +964,12 @@ contactForm.addEventListener('submit', function(e){
     catch (e) { return false; }
   })();
 
-  // Rien à attendre : on ferme vite, sans imposer les 3.2s du filet CSS.
   if (!holder || !canWebGL || saveData) { setTimeout(close, 1100); return; }
 
   (async () => {
     try {
       const THREE = await import('./3d/lib/three.module.min.js');
-      const { GLTFLoader } = await import('./3d/lib/loaders/GLTFLoader.js');
-      const { MeshoptDecoder } = await import('./3d/lib/libs/meshopt_decoder.module.js');
-      if (closed || !pre.isConnected) return; // déjà fermé : inutile de continuer
+      if (closed || !pre.isConnected) return;
 
       const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
       renderer.setPixelRatio(Math.min(devicePixelRatio, 1.25));
@@ -983,67 +978,71 @@ contactForm.addEventListener('submit', function(e){
 
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(32, holder.clientWidth/holder.clientHeight, 0.1, 100);
-      scene.add(new THREE.HemisphereLight(0xffffff, 0xc8c8c8, 2.4));
+      scene.add(new THREE.HemisphereLight(0xffffff, 0xc8c8c8, 2.0));
       const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(3,5,4); scene.add(key);
-      const rim = new THREE.DirectionalLight(0xffffff, 1.4); rim.position.set(-4,2,-3); scene.add(rim);
+      const rim = new THREE.DirectionalLight(0xffffff, 1.3); rim.position.set(-4,2,-3); scene.add(rim);
 
-      const gltf = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder)
-        .loadAsync('./3d/narguile.glb');
-      if (closed || !pre.isConnected) return;
+      // Matières calées sur les photos. Le chrome est volontairement peu
+      // "métallique" : sans environnement à réfléchir, un vrai métal rend
+      // noir en temps réel ; un gris clair peu métallisé lit bien mieux.
+      const blanc  = new THREE.MeshStandardMaterial({ color:0xffffff, roughness:0.30, metalness:0.05 });
+      const chrome = new THREE.MeshStandardMaterial({ color:0xd4d4d4, roughness:0.25, metalness:0.20 });
+      const noir   = new THREE.MeshStandardMaterial({ color:0x262626, roughness:0.60, metalness:0.05 });
+      const verre  = new THREE.MeshStandardMaterial({ color:0xb9a892, roughness:0.40, metalness:0.05 });
 
-      const model = gltf.scene;
+      const g = new THREE.Group();
+      const CY = (rt, rb, h, seg=48) => new THREE.CylinderGeometry(rt, rb, h, seg);
+      const add = (geo, mat, y, x=0) => {
+        const m = new THREE.Mesh(geo, mat); m.position.set(x, y, 0); g.add(m); return m;
+      };
 
-      // Habillage blanc a contour noir, pour coller a la charte marbre et
-      // chrome du site plutot qu'au noir d'origine du modele.
-      // Le contour est une coque inversee extrudee LE LONG DES NORMALES :
-      // l'agrandir par mise a l'echelle deplacerait la geometrie autour de
+      // Proportions relevées sur la photo du lieu (hauteur totale ~443px
+      // pour une base de ~63px de large).
+      add(CY(0.145, 0.132, 0.50), blanc, 0.25);              // vase blanc
+      add(CY(0.150, 0.150, 0.10), chrome, 0.545);            // collerette chromée
+      add(CY(0.152, 0.140, 0.03), chrome, 0.61);             // liseré
+      add(CY(0.028, 0.028, 0.62), chrome, 0.93);             // tige
+      add(new THREE.BoxGeometry(0.20, 0.12, 0.13), blanc, 0.80); // bloc de maintien
+      add(CY(0.225, 0.225, 0.012, 56), chrome, 1.25);        // plateau
+      add(new THREE.TorusGeometry(0.225, 0.009, 10, 56), chrome, 1.256).rotation.x = Math.PI/2;
+      add(CY(0.048, 0.085, 0.20), noir, 1.37);               // adaptateur conique
+      add(CY(0.098, 0.098, 0.10, 40), verre, 1.52);          // fenêtre "QUASAR"
+      add(CY(0.115, 0.115, 0.035, 40), noir, 1.60);          // disque bas
+      add(CY(0.120, 0.120, 0.040, 40), noir, 1.655);         // disque haut
+      add(CY(0.020, 0.020, 0.62), blanc, 1.16, 0.30);        // tuyau rigide
+      add(CY(0.024, 0.024, 0.025), chrome, 0.87, 0.30);      // bague
+      add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0.30, 0.86, 0), new THREE.Vector3(0.36, 0.55, 0.05),
+        new THREE.Vector3(0.40, 0.22, 0.10), new THREE.Vector3(0.28, 0.03, 0.16),
+        new THREE.Vector3(0.02, -0.02, 0.20)
+      ]), 40, 0.019, 14, false), blanc, 0);                  // flexible
+
+      // Contour noir : coque inversée extrudée LE LONG DES NORMALES.
+      // L'agrandir par mise à l'échelle déplacerait la géométrie autour de
       // son origine locale et ferait transpercer le noir par plaques.
-      // L'epaisseur est convertie depuis les unites monde vers les unites
-      // locales de chaque piece : les noeuds glTF portent des echelles
-      // differentes, et une valeur locale unique donnait un contour
-      // d'epaisseur incoherente, voire invisible.
-      const THICKNESS = 0.006; // regle a la taille d'affichage reelle
-      const white = new THREE.MeshStandardMaterial({
-        color: 0xffffff, roughness: 0.35, metalness: 0.1
-      });
-      const OUTLINE_VS = `
-        uniform float thickness;
-        void main(){
-          vec3 p = position + normal * thickness;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
-        }`;
-      const OUTLINE_FS = 'void main(){ gl_FragColor = vec4(0.04,0.04,0.04,1.0); }';
-      model.updateWorldMatrix(true, true);
+      const VS = 'uniform float thickness; void main(){ vec3 p = position + normal*thickness;'
+               + ' gl_Position = projectionMatrix * modelViewMatrix * vec4(p,1.0); }';
+      const FS = 'void main(){ gl_FragColor = vec4(0.04,0.04,0.04,1.0); }';
       const shells = [];
-      const tmpScale = new THREE.Vector3();
-      model.traverse(o => {
+      g.traverse(o => {
         if (!o.isMesh) return;
-        o.material = white;
-        o.getWorldScale(tmpScale);
-        const ws = (Math.abs(tmpScale.x) + Math.abs(tmpScale.y) + Math.abs(tmpScale.z)) / 3 || 1;
-        const shell = new THREE.Mesh(o.geometry, new THREE.ShaderMaterial({
+        const s = new THREE.Mesh(o.geometry, new THREE.ShaderMaterial({
           side: THREE.BackSide,
-          uniforms: { thickness: { value: THICKNESS / ws } },
-          vertexShader: OUTLINE_VS,
-          fragmentShader: OUTLINE_FS
+          uniforms: { thickness: { value: 0.006 } }, // réglé à la taille d'affichage réelle
+          vertexShader: VS, fragmentShader: FS
         }));
-        shell.position.copy(o.position);
-        shell.rotation.copy(o.rotation);
-        shell.scale.copy(o.scale);
-        shells.push([o.parent, shell]);
+        s.position.copy(o.position); s.rotation.copy(o.rotation); s.scale.copy(o.scale);
+        shells.push(s);
       });
-      shells.forEach(([parent, shell]) => parent.add(shell));
+      shells.forEach(s => g.add(s));
 
-      const box = new THREE.Box3().setFromObject(model);
+      const box = new THREE.Box3().setFromObject(g);
       const size = box.getSize(new THREE.Vector3());
-      model.position.sub(box.getCenter(new THREE.Vector3()));
-      const pivot = new THREE.Group(); pivot.add(model); scene.add(pivot);
-
-      const dist = (size.y / 0.82) / (2 * Math.tan(camera.fov * Math.PI / 360));
-      camera.position.set(0, 0, dist);
+      g.position.sub(box.getCenter(new THREE.Vector3()));
+      const pivot = new THREE.Group(); pivot.add(g); scene.add(pivot);
+      camera.position.set(0, 0, (size.y / 0.86) / (2 * Math.tan(camera.fov * Math.PI / 360)));
       camera.lookAt(0, 0, 0);
 
-      // 30 img/s suffisent largement pour une rotation lente.
       const FRAME_MS = 1000 / 30;
       let last = performance.now(), acc = 0;
       renderer.setAnimationLoop(now => {
@@ -1055,18 +1054,15 @@ contactForm.addEventListener('submit', function(e){
         renderer.render(scene, camera);
       });
 
-      // Laisse le modèle tourner un court instant, puis on entre sur le site.
       setTimeout(close, 1400);
 
-      // Une fois l'écran de chargement retiré, on libère tout : plus rien
-      // ne tourne ni ne consomme pendant la visite.
       pre.addEventListener('transitionend', () => {
         renderer.setAnimationLoop(null);
         renderer.dispose();
         pre.remove();
       }, { once: true });
     } catch (e) {
-      close(); // échec du chargement : on entre sur le site sans attendre
+      close();
     }
   })();
 })();
