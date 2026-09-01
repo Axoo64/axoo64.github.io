@@ -992,6 +992,48 @@ contactForm.addEventListener('submit', function(e){
       if (closed || !pre.isConnected) return;
 
       const model = gltf.scene;
+
+      // Habillage blanc a contour noir, pour coller a la charte marbre et
+      // chrome du site plutot qu'au noir d'origine du modele.
+      // Le contour est une coque inversee extrudee LE LONG DES NORMALES :
+      // l'agrandir par mise a l'echelle deplacerait la geometrie autour de
+      // son origine locale et ferait transpercer le noir par plaques.
+      // L'epaisseur est convertie depuis les unites monde vers les unites
+      // locales de chaque piece : les noeuds glTF portent des echelles
+      // differentes, et une valeur locale unique donnait un contour
+      // d'epaisseur incoherente, voire invisible.
+      const THICKNESS = 0.006; // regle a la taille d'affichage reelle
+      const white = new THREE.MeshStandardMaterial({
+        color: 0xffffff, roughness: 0.35, metalness: 0.1
+      });
+      const OUTLINE_VS = `
+        uniform float thickness;
+        void main(){
+          vec3 p = position + normal * thickness;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+        }`;
+      const OUTLINE_FS = 'void main(){ gl_FragColor = vec4(0.04,0.04,0.04,1.0); }';
+      model.updateWorldMatrix(true, true);
+      const shells = [];
+      const tmpScale = new THREE.Vector3();
+      model.traverse(o => {
+        if (!o.isMesh) return;
+        o.material = white;
+        o.getWorldScale(tmpScale);
+        const ws = (Math.abs(tmpScale.x) + Math.abs(tmpScale.y) + Math.abs(tmpScale.z)) / 3 || 1;
+        const shell = new THREE.Mesh(o.geometry, new THREE.ShaderMaterial({
+          side: THREE.BackSide,
+          uniforms: { thickness: { value: THICKNESS / ws } },
+          vertexShader: OUTLINE_VS,
+          fragmentShader: OUTLINE_FS
+        }));
+        shell.position.copy(o.position);
+        shell.rotation.copy(o.rotation);
+        shell.scale.copy(o.scale);
+        shells.push([o.parent, shell]);
+      });
+      shells.forEach(([parent, shell]) => parent.add(shell));
+
       const box = new THREE.Box3().setFromObject(model);
       const size = box.getSize(new THREE.Vector3());
       model.position.sub(box.getCenter(new THREE.Vector3()));
