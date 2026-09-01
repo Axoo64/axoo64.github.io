@@ -309,28 +309,39 @@
     padding:8px 16px; cursor:pointer; text-decoration:none; font-family:inherit;
   }
 
-  /* ---- bandeau cookies (RGPD) : la carte Google Maps dépose des
-     cookies tiers, elle ne se charge donc qu'après consentement. ---- */
-  .cookie-banner{
-    position:fixed; left:0; right:0; bottom:36px; z-index:9998;
-    background:var(--black); color:#eaeaea;
-    padding:18px 6vw; display:flex; align-items:center; justify-content:center;
-    gap:20px; flex-wrap:wrap; font-size:0.85rem;
-    box-shadow:0 -4px 20px rgba(0,0,0,0.25);
-    transform:translateY(0); transition:transform .4s ease;
+  /* ---- barres fixes du bas ----
+     Le bandeau cookies et la mention "maquette" sont dans UN SEUL
+     conteneur empilé, plutôt que positionnés chacun de leur côté avec
+     un décalage calculé en JS. Ce calcul se désynchronisait (au
+     chargement des polices, la hauteur du texte change sans déclencher
+     de resize), les deux barres se chevauchaient et les boutons du
+     bandeau cookies se retrouvaient hors de l'écran sur mobile —
+     impossible de le fermer. Ici, l'empilement est garanti par le
+     flux CSS, sans aucune mesure. */
+  .bottom-stack{
+    position:fixed; left:0; right:0; bottom:0; z-index:9998;
+    display:flex; flex-direction:column;
+    padding-bottom:env(safe-area-inset-bottom, 0px);
   }
-  .cookie-banner.hidden{ transform:translateY(110%); }
-  .cookie-banner p{ margin:0; max-width:520px; line-height:1.5; }
-  .cookie-banner .cookie-actions{ display:flex; gap:12px; flex-shrink:0; }
+  .cookie-banner{
+    background:var(--black); color:#eaeaea;
+    padding:14px 5vw; display:flex; align-items:center; justify-content:center;
+    gap:14px; flex-wrap:wrap; font-size:0.8rem;
+    box-shadow:0 -4px 20px rgba(0,0,0,0.25);
+    max-height:55vh; overflow-y:auto; /* ne peut jamais dépasser l'écran */
+  }
+  .cookie-banner.hidden{ display:none; }
+  .cookie-banner p{ margin:0; max-width:520px; line-height:1.45; }
+  .cookie-banner .cookie-actions{ display:flex; gap:10px; flex-shrink:0; }
   .cookie-banner button{
-    font-family:'Jost', sans-serif; font-size:0.78rem; letter-spacing:0.08em;
-    text-transform:uppercase; padding:10px 22px; cursor:pointer; border:1px solid #6a6a6a;
-    background:none; color:#eaeaea;
+    font-family:'Jost', sans-serif; font-size:0.75rem; letter-spacing:0.08em;
+    text-transform:uppercase; padding:9px 18px; cursor:pointer; border:1px solid #6a6a6a;
+    background:none; color:#eaeaea; white-space:nowrap;
   }
   .cookie-banner button.accept{ background:var(--white); color:var(--black); border-color:var(--white); }
   @media (max-width:600px){
-    .cookie-banner{ flex-direction:column; align-items:stretch; text-align:center; }
-    .cookie-banner .cookie-actions{ justify-content:center; }
+    .cookie-banner{ padding:12px 4vw; gap:10px; font-size:0.75rem; }
+    .cookie-banner p{ text-align:center; }
   }
 
   footer{
@@ -353,7 +364,6 @@
   }
 
   .maquette-flag{
-    position:fixed; bottom:0; left:0; right:0; z-index:50;
     background:var(--chrome-dark); color:#fff;
     font-size:0.72rem; text-align:center;
     padding:8px 16px; letter-spacing:0.02em;
@@ -694,14 +704,15 @@
     <div><a href="#ambiance">Ambiance</a><a href="#carte">Carte</a><a href="#contact">Contact</a></div>
   </footer>
 
-  <div class="maquette-flag"><b>Maquette de démonstration</b> — non affiliée au Duo, réalisée à titre d'exemple</div>
-
-  <div class="cookie-banner hidden" id="cookieBanner">
-    <p>Ce site utilise un seul cookie tiers, déposé par Google Maps, uniquement si vous choisissez d'afficher la carte de localisation. Aucun autre suivi n'est utilisé.</p>
-    <div class="cookie-actions">
-      <button type="button" id="cookieRefuse">Refuser</button>
-      <button type="button" class="accept" id="cookieAccept">Accepter</button>
+  <div class="bottom-stack">
+    <div class="cookie-banner hidden" id="cookieBanner">
+      <p>Un cookie tiers (Google Maps) est déposé uniquement si vous affichez la carte. Aucun autre suivi.</p>
+      <div class="cookie-actions">
+        <button type="button" id="cookieRefuse">Refuser</button>
+        <button type="button" class="accept" id="cookieAccept">Accepter</button>
+      </div>
     </div>
+    <div class="maquette-flag"><b>Maquette de démonstration</b> — non affiliée au Duo, réalisée à titre d'exemple</div>
   </div>
 
   <div class="lightbox" id="lightbox">
@@ -732,15 +743,8 @@ const mapEmbed = document.getElementById('mapEmbed');
 const mapPlaceholder = document.getElementById('mapPlaceholder');
 const cookieBanner = document.getElementById('cookieBanner');
 
-// Empile le bandeau cookies juste au-dessus du bandeau "maquette" (les
-// deux sont fixés en bas) — recalculé au cas où le texte du bandeau
-// maquette passe sur 2 lignes sur un très petit écran.
-function positionCookieBanner() {
-  const flag = document.querySelector('.maquette-flag');
-  if (flag) cookieBanner.style.bottom = flag.offsetHeight + 'px';
-}
-positionCookieBanner();
-window.addEventListener('resize', positionCookieBanner);
+// (L'empilement des deux barres du bas est désormais géré uniquement en
+// CSS, via .bottom-stack — plus aucune position calculée ici.)
 let consent = null;
 try { consent = localStorage.getItem('leduo_cookie_consent'); } catch (e) {}
 
