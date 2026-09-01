@@ -291,6 +291,41 @@
     transition:filter .25s ease;
   }
   .map-embed:hover iframe, .map-embed:focus-within iframe{ filter:none; }
+  .map-placeholder{
+    width:100%; height:200px; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:10px;
+    background:rgba(255,255,255,0.04); padding:20px; text-align:center;
+  }
+  .map-placeholder p{ margin:0; font-size:0.8rem; color:#b8b8b8; }
+  .map-placeholder a, .map-placeholder button{
+    font-size:0.75rem; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--white); background:none; border:1px solid #6a6a6a;
+    padding:8px 16px; cursor:pointer; text-decoration:none; font-family:inherit;
+  }
+
+  /* ---- bandeau cookies (RGPD) : la carte Google Maps dépose des
+     cookies tiers, elle ne se charge donc qu'après consentement. ---- */
+  .cookie-banner{
+    position:fixed; left:0; right:0; bottom:36px; z-index:9998;
+    background:var(--black); color:#eaeaea;
+    padding:18px 6vw; display:flex; align-items:center; justify-content:center;
+    gap:20px; flex-wrap:wrap; font-size:0.85rem;
+    box-shadow:0 -4px 20px rgba(0,0,0,0.25);
+    transform:translateY(0); transition:transform .4s ease;
+  }
+  .cookie-banner.hidden{ transform:translateY(110%); }
+  .cookie-banner p{ margin:0; max-width:520px; line-height:1.5; }
+  .cookie-banner .cookie-actions{ display:flex; gap:12px; flex-shrink:0; }
+  .cookie-banner button{
+    font-family:'Jost', sans-serif; font-size:0.78rem; letter-spacing:0.08em;
+    text-transform:uppercase; padding:10px 22px; cursor:pointer; border:1px solid #6a6a6a;
+    background:none; color:#eaeaea;
+  }
+  .cookie-banner button.accept{ background:var(--white); color:var(--black); border-color:var(--white); }
+  @media (max-width:600px){
+    .cookie-banner{ flex-direction:column; align-items:stretch; text-align:center; }
+    .cookie-banner .cookie-actions{ justify-content:center; }
+  }
 
   footer{
     padding:clamp(24px, 4vh, 50px) 6vw;
@@ -595,8 +630,11 @@
           <a href="https://www.tiktok.com/@le_duo64" target="_blank" rel="noopener noreferrer">TikTok</a>
         </div>
         <div class="hours-line">Horaires : 15h – 01h30</div>
-        <div class="map-embed">
-          <iframe src="https://www.google.com/maps?q=Le+Duo+Lounge+%26+Food%2C+Bayonne&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Localisation du Duo — 15/17 Rue des Pontots, Bayonne"></iframe>
+        <div class="map-embed" id="mapEmbed" data-map-src="https://www.google.com/maps?q=Le+Duo+Lounge+%26+Food%2C+Bayonne&output=embed">
+          <div class="map-placeholder" id="mapPlaceholder">
+            <p>La carte utilise des cookies Google Maps.</p>
+            <button type="button" id="mapConsentBtn">Afficher la carte</button>
+          </div>
         </div>
       </div>
       <div>
@@ -638,12 +676,72 @@
 
   <div class="maquette-flag"><b>Maquette de démonstration</b> — non affiliée au Duo, réalisée à titre d'exemple</div>
 
+  <div class="cookie-banner hidden" id="cookieBanner">
+    <p>Ce site utilise un seul cookie tiers, déposé par Google Maps, uniquement si vous choisissez d'afficher la carte de localisation. Aucun autre suivi n'est utilisé.</p>
+    <div class="cookie-actions">
+      <button type="button" id="cookieRefuse">Refuser</button>
+      <button type="button" class="accept" id="cookieAccept">Accepter</button>
+    </div>
+  </div>
+
   <div class="lightbox" id="lightbox">
     <span class="lightbox-close" id="lightboxClose" aria-label="Fermer">&times;</span>
     <img id="lightboxImg" src="" alt="">
   </div>
 
 <script>
+// Cookies (RGPD) : le seul cookie tiers du site vient de l'iframe Google
+// Maps. Elle ne se charge donc jamais tant que le visiteur n'a pas
+// explicitement accepté — que ce soit via le bandeau ou directement via
+// le bouton sur la carte elle-même (même action, même mémorisation).
+const mapEmbed = document.getElementById('mapEmbed');
+const mapPlaceholder = document.getElementById('mapPlaceholder');
+const cookieBanner = document.getElementById('cookieBanner');
+
+// Empile le bandeau cookies juste au-dessus du bandeau "maquette" (les
+// deux sont fixés en bas) — recalculé au cas où le texte du bandeau
+// maquette passe sur 2 lignes sur un très petit écran.
+function positionCookieBanner() {
+  const flag = document.querySelector('.maquette-flag');
+  if (flag) cookieBanner.style.bottom = flag.offsetHeight + 'px';
+}
+positionCookieBanner();
+window.addEventListener('resize', positionCookieBanner);
+let consent = null;
+try { consent = localStorage.getItem('leduo_cookie_consent'); } catch (e) {}
+
+function loadMap() {
+  const src = mapEmbed.getAttribute('data-map-src');
+  const iframe = document.createElement('iframe');
+  iframe.src = src;
+  iframe.loading = 'lazy';
+  iframe.referrerPolicy = 'no-referrer-when-downgrade';
+  iframe.title = 'Localisation du Duo — 15/17 Rue des Pontots, Bayonne';
+  mapEmbed.innerHTML = '';
+  mapEmbed.appendChild(iframe);
+}
+function showRefusedPlaceholder() {
+  mapPlaceholder.innerHTML = '<p>Carte non affichée (cookies refusés).</p>' +
+    '<a href="https://www.google.com/maps/search/?api=1&query=Le+Duo+Lounge+%26+Food+Bayonne" target="_blank" rel="noopener noreferrer">Voir sur Google Maps</a>';
+}
+function setConsent(value) {
+  consent = value;
+  try { localStorage.setItem('leduo_cookie_consent', value); } catch (e) {}
+  cookieBanner.classList.add('hidden');
+  if (value === 'accepted') loadMap(); else showRefusedPlaceholder();
+}
+
+if (consent === 'accepted') {
+  loadMap();
+} else if (consent === 'refused') {
+  showRefusedPlaceholder();
+} else {
+  setTimeout(() => cookieBanner.classList.remove('hidden'), 1200);
+}
+document.getElementById('cookieAccept').addEventListener('click', () => setConsent('accepted'));
+document.getElementById('cookieRefuse').addEventListener('click', () => setConsent('refused'));
+document.getElementById('mapConsentBtn').addEventListener('click', () => setConsent('accepted'));
+
 // Écran de chargement : durée minimale courte pour rester perceptible,
 // même si tout charge instantanément (petit site, peu d'images).
 const preloader = document.getElementById('preloader');
