@@ -66,33 +66,6 @@
       linear-gradient(180deg, rgba(242,241,239,0.12) 0%, rgba(242,241,239,0.65) 45%, var(--marble-bg) 78%),
       url("photos/narguile-fumee.jpg") center 25%/cover;
   }
-  /* ---- narguilé 3D dans le hero ----
-     Chargé APRÈS coup et en tâche de fond : le hero (photo + logo)
-     s'affiche immédiatement comme avant, le modèle se fond par-dessus
-     seulement une fois prêt. Un visiteur sur réseau lent, sans WebGL,
-     ou en mode économie de données ne voit tout simplement jamais la
-     3D et garde le hero d'origine — rien ne casse, rien n'attend. */
-  .hero-3d{
-    position:absolute; inset:0;
-    opacity:0; transition:opacity 1.2s ease;
-    pointer-events:none; /* ne bloque jamais le clic sur le bouton du hero */
-  }
-  .hero-3d.ready{ opacity:1; }
-  /* Emplacement mobile : dans la section "Nos Narguilés", où le modèle a
-     de la place. Dans le hero d'un petit écran, il passait derrière le
-     texte et le bouton et nuisait à la lisibilité. */
-  .narg-3d{
-    display:none; width:100%; max-width:1320px; height:320px;
-    margin:0 auto 30px; opacity:0; transition:opacity 1s ease;
-  }
-  .narg-3d.active{ display:block; }
-  .narg-3d.ready{ opacity:1; }
-  .narg-3d canvas{ width:100%; height:100%; display:block; }
-  .hero-3d canvas{ width:100%; height:100%; display:block; }
-  @media (prefers-reduced-motion: reduce){
-    .hero-3d{ transition:none; }
-  }
-
   .logo-frame{
     display:inline-block;
     padding:26px 56px;
@@ -481,10 +454,24 @@
   .preloader{
     position:fixed; inset:0; z-index:9999;
     background:var(--marble-bg);
-    display:flex; align-items:center; justify-content:center;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:18px;
     pointer-events:none;
-    animation:preloaderAutoHide 0.6s ease 1.1s forwards;
+    /* Filet de sécurité ABSOLU, en CSS pur : quoi qu'il arrive (modèle
+       qui ne charge pas, JS en échec, réseau coupé), l'écran de
+       chargement disparaît de lui-même au bout de 3.2s. Le JS ne fait
+       que l'escamoter PLUS TÔT quand il n'y a plus rien à attendre. */
+    animation:preloaderAutoHide 0.6s ease 3.2s forwards;
   }
+  /* Sortie anticipée pilotée par le JS (modèle affiché, ou rien à
+     attendre). Annule l'animation de secours et fond immédiatement. */
+  .preloader.done{
+    animation:none;
+    opacity:0; visibility:hidden;
+    transition:opacity .6s ease, visibility .6s ease;
+  }
+  .preloader-3d{ width:min(58vw, 260px); height:min(42vh, 300px); }
+  .preloader-3d canvas{ width:100%; height:100%; display:block; }
   @keyframes preloaderAutoHide{
     from{ opacity:1; visibility:visible; }
     to{ opacity:0; visibility:hidden; }
@@ -562,7 +549,10 @@
 </head>
 <body>
 
-  <div class="preloader" id="preloader"><span class="preloader-mark">Le Duo</span></div>
+  <div class="preloader" id="preloader">
+    <div class="preloader-3d" id="preloader3d" aria-hidden="true"></div>
+    <span class="preloader-mark">Le Duo</span>
+  </div>
 
   <div class="top-strip">
     <span>15/17 Rue des Pontots, 64 100 Bayonne</span>
@@ -571,7 +561,6 @@
   </div>
 
   <header class="hero" style="position:relative;">
-    <div class="hero-3d" id="hero3d" aria-hidden="true"></div>
     <div class="smoke-layer" aria-hidden="true">
       <div class="wisp"></div><div class="wisp"></div><div class="wisp"></div>
       <div class="wisp"></div><div class="wisp"></div>
@@ -606,8 +595,7 @@
 
   <section id="carte">
     <div class="cat-band">Nos Narguilés</div>
-    <img class="narg-photo reveal" id="nargPhoto" loading="lazy" src="photos/narguile-quasar.jpg" alt="Narguilé Quasar sur table en marbre">
-    <div class="narg-3d" id="narg3d" aria-hidden="true"></div>
+    <img class="narg-photo reveal" loading="lazy" src="photos/narguile-quasar.jpg" alt="Narguilé Quasar sur table en marbre">
     <div class="narg-tiers reveal">
       <div class="narg-tier"><span class="tier-name">Classique</span><span class="price">12 €</span></div>
       <div class="narg-tier naturel"><span class="tier-name">Naturel</span><span class="tier-desc">Brohood ou Kaloud</span><span class="price">15 €</span></div>
@@ -856,9 +844,9 @@ document.getElementById('cookieSettings').addEventListener('click', reopenCookie
 
 renderMap();
 if (consent !== 'accepted' && consent !== 'refused') {
-  // 1800ms : l'écran de chargement vit jusqu'à ~1.7s ; en dessous, le
-  // bandeau apparaîtrait masqué derrière lui.
-  bannerShowTimer = setTimeout(() => cookieBanner.classList.remove('hidden'), 1800);
+  // 3400ms : l'écran de chargement peut désormais attendre le modèle 3D
+  // jusqu'à 3.2s ; en dessous, le bandeau apparaîtrait masqué derrière.
+  bannerShowTimer = setTimeout(() => cookieBanner.classList.remove('hidden'), 3400);
 }
 
 // Apparition au scroll : chaque bloc se révèle une seule fois quand il
@@ -956,36 +944,37 @@ contactForm.addEventListener('submit', function(e){
 });
 </script>
 
-<!-- Narguilé 3D : module séparé et volontairement isolé du script
-     principal. S'il échoue (pas de WebGL, réseau coupé, navigateur
-     ancien qui ignore type="module"...), le hero reste exactement tel
-     qu'il était et le reste du site n'est pas impacté. -->
+<!-- Narguilé 3D affiché pendant l'écran de chargement, puis retiré.
+     Module séparé et isolé : s'il échoue (pas de WebGL, réseau, vieux
+     navigateur qui ignore type="module"), l'écran de chargement
+     disparaît quand même — c'est le CSS qui en a la charge, jamais ce
+     script. -->
 <script type="module">
-try {
-  // Grand écran : dans le hero. Petit écran : dans la section narguilés
-  // (le hero mobile est trop dense, le modèle y masquait le texte).
-  const wide = innerWidth > 780;
-  const holder = document.getElementById(wide ? 'hero3d' : 'narg3d');
-  const nargPhoto = document.getElementById('nargPhoto');
-  // La photo fixe n'est retiree qu'UNE FOIS le modele charge (plus bas) :
-  // si la 3D echoue (pas de WebGL, reseau, navigateur ancien), la section
-  // garde son visuel d'origine au lieu de se retrouver vide.
+(() => {
+  const pre = document.getElementById('preloader');
+  const holder = document.getElementById('preloader3d');
+  if (!pre) return;
+
+  // Escamote l'écran de chargement plus tôt que le filet de sécurité CSS.
+  let closed = false;
+  const close = () => { if (!closed) { closed = true; pre.classList.add('done'); } };
+
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // Mode économie de données : on n'impose pas 2 Mo à quelqu'un qui a
-  // explicitement demandé à son navigateur de limiter les téléchargements.
   const saveData = navigator.connection && navigator.connection.saveData;
   const canWebGL = (() => {
     try { return !!document.createElement('canvas').getContext('webgl2'); }
     catch (e) { return false; }
   })();
 
-  if (holder && canWebGL && !saveData) {
-    // Attend que la page soit posée avant d'aller chercher 2 Mo : le
-    // premier affichage ne doit jamais attendre la 3D.
-    const start = () => setTimeout(async () => {
+  // Rien à attendre : on ferme vite, sans imposer les 3.2s du filet CSS.
+  if (!holder || !canWebGL || saveData) { setTimeout(close, 1100); return; }
+
+  (async () => {
+    try {
       const THREE = await import('./3d/lib/three.module.min.js');
       const { GLTFLoader } = await import('./3d/lib/loaders/GLTFLoader.js');
       const { MeshoptDecoder } = await import('./3d/lib/libs/meshopt_decoder.module.js');
+      if (closed || !pre.isConnected) return; // déjà fermé : inutile de continuer
 
       const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
       renderer.setPixelRatio(Math.min(devicePixelRatio, 1.25));
@@ -1000,104 +989,45 @@ try {
 
       const gltf = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder)
         .loadAsync('./3d/narguile.glb');
+      if (closed || !pre.isConnected) return;
 
       const model = gltf.scene;
       const box = new THREE.Box3().setFromObject(model);
       const size = box.getSize(new THREE.Vector3());
       model.position.sub(box.getCenter(new THREE.Vector3()));
-      const pivot = new THREE.Group();
-      pivot.add(model);
-      scene.add(pivot);
+      const pivot = new THREE.Group(); pivot.add(model); scene.add(pivot);
 
-      function layout() {
-        const w = holder.clientWidth, h = holder.clientHeight;
-        renderer.setSize(w, h, false);
-        camera.aspect = w / h;
-        camera.updateProjectionMatrix();
-        // Le modèle occupe ~78% de la hauteur du hero.
-        const dist = (size.y / 0.78) / (2 * Math.tan(camera.fov * Math.PI / 360));
-        camera.position.set(0, 0, dist);
-        camera.lookAt(0, 0, 0);
-        // Décalage calculé en unités RÉELLEMENT visibles à cette distance
-        // (et non en unités du modèle : le modèle mesure 0.39 de large,
-        // le multiplier envoyait l'objet hors de l'écran).
-        const visibleH = 2 * dist * Math.tan(camera.fov * Math.PI / 360);
-        const visibleW = visibleH * camera.aspect;
-        // Grand écran : posé à droite, dégagé du logo centré.
-        // Mobile : centré, mais le hero est déjà chargé — on le garde discret.
-        pivot.position.x = w > 780 ? visibleW * 0.30 : 0;
-      }
-      layout();
-      addEventListener('resize', layout);
+      const dist = (size.y / 0.82) / (2 * Math.tan(camera.fov * Math.PI / 360));
+      camera.position.set(0, 0, dist);
+      camera.lookAt(0, 0, 0);
 
-      // Modele pret : il peut maintenant prendre la place du visuel
-      // statique — jamais avant, pour ne rien laisser de vide.
-      if (!wide) {
-        holder.classList.add('active');
-        if (nargPhoto) nargPhoto.style.display = 'none';
-        layout();
-      }
-      holder.classList.add('ready');
-
-      // Ne tourne (et ne consomme) que si le hero est réellement à l'écran.
-      let visible = true;
-      new IntersectionObserver(es => { visible = es[0].isIntersecting; })
-        .observe(holder);
-
-      // Rendu plafonne a 30 img/s : la rotation est lente, 60 img/s
-      // n'apporte rien de visible et double le cout processeur. Rien
-      // n'est calcule quand le modele est hors ecran.
+      // 30 img/s suffisent largement pour une rotation lente.
       const FRAME_MS = 1000 / 30;
-      let last = performance.now();
-      let acc = 0;
-
-      // Garde-fou adaptatif : sur un appareil qui ne suit pas (vieux
-      // telephone, rendu logiciel sans carte graphique), la 3D degrade
-      // toute la page. Plutot que de parier sur la puissance du visiteur,
-      // on mesure reellement les premieres images : si le rendu est trop
-      // lent, on retire purement et simplement la 3D et on remet le
-      // visuel statique. Mieux vaut pas de 3D qu'un site qui rame.
-      let samples = [], guardDone = false, lastRenderAt = 0;
-      function giveUp3D() {
-        guardDone = true;
-        renderer.setAnimationLoop(null);
-        holder.classList.remove('ready', 'active');
-        renderer.dispose();
-        if (renderer.domElement.parentNode) renderer.domElement.remove();
-        if (!wide && nargPhoto) nargPhoto.style.display = '';
-      }
-
+      let last = performance.now(), acc = 0;
       renderer.setAnimationLoop(now => {
         const dt = now - last; last = now;
-        if (!visible) return;
         acc += dt;
         if (acc < FRAME_MS) return;
-        if (!reduced) pivot.rotation.y += (acc / 1000) * 0.25;
+        if (!reduced) pivot.rotation.y += (acc / 1000) * 0.5;
         acc = 0;
         renderer.render(scene, camera);
-        if (!guardDone) {
-          // On mesure l'INTERVALLE REEL entre deux images rendues, et non
-          // la duree de l'appel render() : WebGL est asynchrone, cet appel
-          // rend la main tout de suite et parait toujours instantane, meme
-          // quand l'appareil s'effondre derriere.
-          const since = now - lastRenderAt;
-          if (lastRenderAt) samples.push(since);
-          lastRenderAt = now;
-          if (samples.length === 20) {
-            samples.sort((a, b) => a - b);
-            // Mediane des intervalles. Le rendu est plafonne a 30 img/s
-            // (~33ms) ; au-dela de 60ms (moins de ~16 img/s), l'appareil
-            // ne suit pas et la 3D degrade toute la page.
-            if (samples[10] > 60) giveUp3D(); else guardDone = true;
-          }
-        }
       });
-    }, 400);
 
-    if (document.readyState === 'complete') start();
-    else addEventListener('load', start);
-  }
-} catch (e) { /* le hero d'origine reste affiché, rien à faire */ }
+      // Laisse le modèle tourner un court instant, puis on entre sur le site.
+      setTimeout(close, 1400);
+
+      // Une fois l'écran de chargement retiré, on libère tout : plus rien
+      // ne tourne ni ne consomme pendant la visite.
+      pre.addEventListener('transitionend', () => {
+        renderer.setAnimationLoop(null);
+        renderer.dispose();
+        pre.remove();
+      }, { once: true });
+    } catch (e) {
+      close(); // échec du chargement : on entre sur le site sans attendre
+    }
+  })();
+})();
 </script>
 </body>
 </html>
