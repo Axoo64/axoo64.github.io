@@ -1,0 +1,11 @@
+Model Information:
+* title:	Hookah
+* source:	https://sketchfab.com/3d-models/hookah-422820f79eed4502ac419b2fe9875696
+* author:	artyrey (https://sketchfab.com/artyrey)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Hookah" (https://sketchfab.com/3d-models/hookah-422820f79eed4502ac419b2fe9875696) by artyrey (https://sketchfab.com/artyrey) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
