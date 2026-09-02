@@ -51,6 +51,35 @@
     revealEls.forEach(function (el) { el.classList.add('in'); });
   }
 
+  /* ---------- Transition de page ----------
+     Rechargement classique entre les pages = coupure sèche, qui tranche
+     avec le reste du site (soigné, animé). Un clic sur un lien interne
+     fait apparaître un voile plein écran avant de naviguer, plutôt qu'un
+     fondu d'entrée sur la page d'arrivée : ça évite tout risque de flash
+     de contenu invisible si le CSS met du temps à s'appliquer côté client
+     suivant, et la page d'arrivée profite de toute façon déjà de ses
+     propres .reveal. Le voile est injecté en JS uniquement — sans JS, un
+     lien reste un lien normal, navigation immédiate. */
+  if (!reduceMotion) {
+    var veil = document.createElement('div');
+    veil.className = 'page-transition-veil';
+    veil.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(veil);
+
+    document.addEventListener('click', function (e) {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      var link = e.target.closest('a[href]');
+      if (!link || link.target === '_blank') return;
+      var url;
+      try { url = new URL(link.href, location.href); } catch (err) { return; }
+      if (url.origin !== location.origin) return;
+      if (url.pathname === location.pathname) return; // ancre ou lien vers soi-même : pas de voile
+      e.preventDefault();
+      document.documentElement.classList.add('page-leave');
+      setTimeout(function () { location.href = link.href; }, 220);
+    });
+  }
+
   /* ---------- Boutons magnétiques ----------
      Nudge léger vers le curseur dans un rayon donné. Ignoré au clavier/tactile
      et avec prefers-reduced-motion : le bouton reste un bouton normal. */
