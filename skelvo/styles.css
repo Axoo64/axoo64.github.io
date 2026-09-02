@@ -120,8 +120,16 @@ nav.top .nav-cta{
   padding-bottom: 2px;
 }
 @media (max-width: 560px){
-  nav.top .nav-links{ gap: 16px; }
-  nav.top .nav-link:not([aria-current="page"]):not(.nav-cta){ display: none; }
+  nav.top .nav-links{ gap: 14px; }
+  /* Les 3 liens restent toujours visibles : "Accueil" / "Le Studio" /
+     "Contact" tiennent sans souci sur un écran de téléphone. Une version
+     précédente masquait tout lien non-actif et non-CTA ici, ce qui rendait
+     "Le Studio" injoignable depuis le menu de la page d'accueil sur
+     mobile — seul le footer y menait encore. */
+}
+@media (max-width: 380px){
+  nav.top .nav-links{ gap: 10px; }
+  nav.top .nav-link, nav.top .nav-cta{ font-size: 0.88rem; }
 }
 
 /* ---------- BUTTONS ---------- */
