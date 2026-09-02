@@ -177,10 +177,17 @@
      d'être recadrée en 4:3. */
   .work-card .thumb{ display: block; aspect-ratio: 4 / 3; overflow: hidden; background: var(--petrole-deep); }
   .work-card .thumb img{ width: 100%; height: 100%; object-fit: cover; display: block; }
-  /* Aperçu GitHub Pages uniquement : je ne peux pas y pousser de fichier image,
-     donc la vignette ABS-Cover est un aplat aux couleurs de la marque. La
-     version livrée (zip / Netlify) utilise bien la photo img/abs-cover.jpg. */
-  .work-card .thumb.pending{ background: linear-gradient(135deg, var(--petrole-glow) 0%, var(--petrole-deep) 55%, var(--terracotta) 140%); }
+  /* Deux couches de fond empilées : la photo d'abord, le dégradé de marque
+     dessous. Si img/abs-cover.jpg est absent (cas de l'aperçu GitHub Pages, où
+     je ne peux pas déposer de fichier image), le navigateur ignore simplement
+     la couche manquante et affiche le dégradé — jamais d'icône "image cassée".
+     Le jour où la photo est déposée, elle apparaît sans toucher au code. */
+  .work-card .thumb.pending{
+    background-image: url("img/abs-cover.jpg"), linear-gradient(135deg, var(--petrole-glow) 0%, var(--petrole-deep) 55%, var(--terracotta) 140%);
+    background-size: cover, cover;
+    background-position: center, center;
+    background-repeat: no-repeat, no-repeat;
+  }
   .work-card .work-body{ padding: 20px 22px 22px; }
   .work-card .work-tag{ font-size: 0.8rem; color: var(--terracotta-soft); font-weight: 500; }
   .work-card h3{ margin-top: 8px; font-size: 1.12rem; font-weight: 600; }
