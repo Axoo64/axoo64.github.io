@@ -648,13 +648,22 @@
      d'affichage. */
   /* ===== FILIGRANE DE DÉMO — À RETIRER dès que le site devient officiel =====
      Dissuade la copie/capture d'écran pendant la phase de démarchage.
+     position:absolute (pas fixed) : le filigrane défile AVEC la page,
+     comme s'il faisait partie du design, plutôt que de rester collé à
+     l'écran en permanence — plus discret et plus soigné visuellement.
+     Sa hauteur est posée en JS (--doc-height, voir plus bas) pour couvrir
+     toute la longueur réelle de la page, pas seulement un premier écran :
+     sur mobile en particulier, ne couvrir qu'un écran aurait laissé la
+     quasi-totalité de la page (la carte, très longue) sans filigrane.
      pointer-events:none : ne bloque jamais un clic, quel que soit le
-     z-index (posé au-dessus de tout, y compris l'écran de chargement,
-     pour être visible dès la première seconde). */
+     z-index. Motif plus dense (tuile 220×140 au lieu de 360×220) pour
+     rester bien visible même sur un écran de téléphone étroit. */
   .demo-watermark{
-    position:fixed; inset:0; z-index:999999;
+    position:absolute; top:0; left:0; right:0;
+    height:calc(var(--doc-height, 100%));
+    z-index:500;
     pointer-events:none;
-    background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNjAiIGhlaWdodD0iMjIwIj4KICA8dGV4dCB4PSIxMCIgeT0iMTUwIiB0cmFuc2Zvcm09InJvdGF0ZSgtMzAgMTgwIDExMCkiIGZvbnQtZmFtaWx5PSJKb3N0LCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzNCIgZm9udC13ZWlnaHQ9IjYwMCIgbGV0dGVyLXNwYWNpbmc9IjYiIGZpbGw9IiM3YTdhN2EiIGZpbGwtb3BhY2l0eT0iMC4xNiI+U0tFTFZPPC90ZXh0Pgo8L3N2Zz4=");
+    background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMjAiIGhlaWdodD0iMTQwIj4KICA8dGV4dCB4PSIwIiB5PSI5MiIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDExMCA3MCkiIGZvbnQtZmFtaWx5PSJKb3N0LCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyMiIgZm9udC13ZWlnaHQ9IjYwMCIgbGV0dGVyLXNwYWNpbmc9IjQiIGZpbGw9IiM3YTdhN2EiIGZpbGwtb3BhY2l0eT0iMC4xNiI+U0tFTFZPPC90ZXh0Pgo8L3N2Zz4=");
     background-repeat:repeat;
   }
   /* ===== FIN FILIGRANE DE DÉMO ===== */
@@ -818,7 +827,7 @@
 
   <section id="carte">
     <div class="cat-band">Nos Narguilés</div>
-    <img class="narg-photo reveal" loading="lazy" src="photos/narguile-quasar.jpg" alt="Narguilé Quasar sur table en marbre">
+    <img class="narg-photo reveal" src="photos/narguile-quasar.jpg" alt="Narguilé Quasar sur table en marbre">
     <div class="narg-tiers reveal">
       <div class="narg-tier"><span class="tier-name">Classique</span><span class="price">12 €</span></div>
       <div class="narg-tier naturel"><span class="tier-name">Naturel</span><span class="tier-desc">Brohood ou Kaloud</span><span class="price">15 €</span></div>
@@ -995,14 +1004,25 @@
 function updateAppVh() {
   document.documentElement.style.setProperty('--app-vh', (window.innerHeight * 0.01) + 'px');
 }
+
+// Filigrane de démo (voir .demo-watermark en CSS) : posé en position
+// absolute pour défiler avec la page plutôt que de rester collé à
+// l'écran, il a besoin d'une hauteur explicite couvrant toute la page —
+// sans ça il ne couvrirait que le premier écran.
+function updateDocHeight() {
+  document.documentElement.style.setProperty('--doc-height', document.documentElement.scrollHeight + 'px');
+}
+
 updateAppVh();
-let appVhResizeTimer = null;
+updateDocHeight();
+window.addEventListener('load', updateDocHeight); // au cas où la page aurait grandi (polices, images) après ce premier calcul
+let appResizeTimer = null;
 window.addEventListener('resize', () => {
   // Le délai laisse le temps à l'animation de la barre d'adresse de se
   // terminer avant de remesurer — sans ça on retomberait dans le même
   // problème, juste décalé de quelques millisecondes.
-  clearTimeout(appVhResizeTimer);
-  appVhResizeTimer = setTimeout(updateAppVh, 200);
+  clearTimeout(appResizeTimer);
+  appResizeTimer = setTimeout(() => { updateAppVh(); updateDocHeight(); }, 200);
 });
 
 // Écran de chargement : l'affichage/masquage est piloté entièrement en
