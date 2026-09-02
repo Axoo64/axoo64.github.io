@@ -158,6 +158,27 @@
   .ghost-card:nth-child(2) .swatch{ background: var(--sable); opacity: 0.35; }
   .ghost-card:nth-child(3) .swatch{ background: var(--petrole-glow); }
 
+  /* Carte projet réelle : même grille que les ghost-cards, mais avec une
+     vraie photo. "Projet perso" plutôt que "client" — travail personnel
+     pas encore totalement finalisé, on ne prétend pas le contraire. */
+  .work-card{
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 4px;
+    overflow: hidden;
+    background: rgba(246,239,230,0.04);
+    border: 1px solid rgba(246,239,230,0.16);
+    transition: transform 0.25s ease, border-color 0.25s ease;
+  }
+  .work-card:hover{ transform: translateY(-3px); border-color: rgba(246,239,230,0.4); }
+  .work-card .thumb{ aspect-ratio: 4 / 3; overflow: hidden; background: var(--petrole-deep); }
+  .work-card .thumb img{ width: 100%; height: 100%; object-fit: cover; display: block; }
+  .work-card .work-body{ padding: 20px 22px 22px; }
+  .work-card .work-tag{ font-size: 0.8rem; color: var(--terracotta-soft); font-weight: 500; }
+  .work-card h3{ margin-top: 8px; font-size: 1.12rem; font-weight: 600; }
+  .work-card p{ margin-top: 6px; font-size: 0.92rem; color: rgba(246,239,230,0.68); }
+
   /* ---------- PROCESS ----------
      Vraie scène 3D en WebGL (Three.js, réutilisé du hero) : la caméra vole
      en douceur le long d'un trajet pointillé qui relie 3 repères lumineux,
@@ -323,9 +344,16 @@
 <section class="travaux">
   <div class="wrap">
     <h2 class="reveal">Travaux</h2>
-    <p class="lede reveal">Les premiers projets arrivent bientôt. En attendant, voici où ils prendront place.</p>
+    <p class="lede reveal">Un premier aperçu — d'autres projets arrivent.</p>
     <div class="ghost-grid reveal">
-      <div class="ghost-card"><span class="tag">Bientôt disponible</span><span class="swatch"></span></div>
+      <a class="work-card" href="https://axoo64.github.io/le-duo/" target="_blank" rel="noopener">
+        <span class="thumb"><img src="https://axoo64.github.io/le-duo/photos/salle-neon-complet.jpg" alt="Salle ambiance néon du lounge Le Duo" loading="lazy"></span>
+        <span class="work-body">
+          <span class="work-tag">Projet perso · en cours</span>
+          <h3>Le Duo</h3>
+          <p>Lounge café à Bayonne — narguilé, crêpes, mochis.</p>
+        </span>
+      </a>
       <div class="ghost-card"><span class="tag">Bientôt disponible</span><span class="swatch"></span></div>
       <div class="ghost-card"><span class="tag">Bientôt disponible</span><span class="swatch"></span></div>
     </div>
