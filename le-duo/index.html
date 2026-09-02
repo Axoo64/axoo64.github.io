@@ -160,6 +160,55 @@
   @media (max-width:780px){ .sticky-nav{ display:none; } }
   @media (prefers-reduced-motion: reduce){ .sticky-nav{ transition:none; } }
 
+  /* ---- menu burger (mobile uniquement) ----
+     L'équivalent tactile de la barre du haut : sur mobile il n'y a pas de
+     survol pour découvrir une barre qui apparaît au défilement, donc un
+     bouton fixe, toujours accessible, qui ouvre un plein écran avec les
+     3 mêmes destinations que partout ailleurs sur le site. */
+  .mobile-menu-btn{
+    display:none; position:fixed; top:12px; right:4vw; z-index:950;
+    width:44px; height:44px; align-items:center; justify-content:center;
+    background:rgba(242,241,239,0.94); border:1px solid var(--line);
+    padding:0; cursor:pointer;
+  }
+  .mobile-menu-btn .bar{
+    position:relative; display:block; width:20px; height:2px; background:var(--black);
+    transition:background .2s ease;
+  }
+  .mobile-menu-btn .bar::before, .mobile-menu-btn .bar::after{
+    content:''; position:absolute; left:0; width:20px; height:2px; background:var(--black);
+    transition:transform .25s ease, opacity .2s ease;
+  }
+  .mobile-menu-btn .bar::before{ top:-6px; }
+  .mobile-menu-btn .bar::after{ top:6px; }
+  /* Les 3 barres se transforment en croix — pas besoin d'une seconde icône. */
+  .mobile-menu-btn[aria-expanded="true"] .bar{ background:transparent; }
+  .mobile-menu-btn[aria-expanded="true"] .bar::before{ transform:translateY(6px) rotate(45deg); }
+  .mobile-menu-btn[aria-expanded="true"] .bar::after{ transform:translateY(-6px) rotate(-45deg); }
+
+  .mobile-menu{
+    position:fixed; inset:0; z-index:940;
+    background:var(--marble-bg);
+    display:none; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center;
+  }
+  .mobile-menu.show{ display:flex; }
+  .mobile-menu a{
+    font-family:'Jost', sans-serif; font-size:1.4rem; letter-spacing:0.1em;
+    text-transform:uppercase; text-decoration:none; color:var(--black);
+    padding:16px 0;
+  }
+  .mobile-menu .phone{
+    margin-top:34px; font-size:0.95rem; letter-spacing:0.04em;
+    color:var(--ink-dim); text-decoration:none;
+  }
+  @media (max-width:780px){ .mobile-menu-btn{ display:flex; } }
+  /* Filet de sécurité : si la fenêtre passe en largeur PC pendant que le
+     menu est ouvert (rotation de tablette, redimensionnement), on ne
+     garde jamais un plein écran orphelin caché derrière la barre PC. */
+  @media (min-width:781px){ .mobile-menu.show{ display:none; } }
+  @media (prefers-reduced-motion: reduce){ .mobile-menu-btn .bar, .mobile-menu-btn .bar::before, .mobile-menu-btn .bar::after{ transition:none; } }
+
   /* Chaque grand bloc occupe au moins tout l'écran : l'accueil, l'ambiance
      et le contact tiennent naturellement sur un seul écran et s'y centrent
      verticalement. La carte, elle, contient volontairement tout le menu
@@ -467,6 +516,10 @@
     .gallery{ grid-template-columns:1fr 1fr; grid-template-rows:260px 150px 150px;}
     .gallery .g1{ grid-row:auto; grid-column: 1 / 3; }
     .logo-frame{ padding:20px 30px; }
+    /* Le bouton burger est fixe par-dessus le tout début de page : sans
+       cette marge, son carré blanc recouvre le numéro de téléphone du
+       bandeau du haut tant qu'on n'a pas encore défilé. */
+    .top-strip{ padding-right:calc(4vw + 56px); }
   }
 
   .maquette-flag{
@@ -627,7 +680,7 @@
     .contact-grid{ grid-template-columns:1fr; gap:36px; }
   }
 </style>
-<noscript><style>.reveal{opacity:1!important; transform:none!important;} .preloader{display:none!important;} .sticky-nav{position:static!important; transform:none!important;}</style></noscript>
+<noscript><style>.reveal{opacity:1!important; transform:none!important;} .preloader{display:none!important;} .sticky-nav{position:static!important; transform:none!important;} .mobile-menu-btn{display:none!important;}</style></noscript>
 </head>
 <body>
 
@@ -648,6 +701,16 @@
     </div>
     <span class="phone">07 88 90 92 96</span>
   </nav>
+
+  <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="mobileMenu">
+    <span class="bar"></span>
+  </button>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#ambiance">Ambiance</a>
+    <a href="#carte">Carte</a>
+    <a href="#contact">Contact</a>
+    <a class="phone" href="tel:0788909296">07 88 90 92 96</a>
+  </div>
 
   <header class="hero" style="position:relative;">
     <div class="smoke-layer" aria-hidden="true">
@@ -877,6 +940,26 @@ if (stickyNav && heroEl) {
   } else {
     stickyNav.classList.add('show');
   }
+}
+
+// Menu burger (mobile) : équivalent tactile de la barre du haut. Toujours
+// accessible dès le chargement (pas de survol sur mobile pour "découvrir"
+// une barre qui apparaîtrait au défilement).
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const mobileMenu = document.getElementById('mobileMenu');
+if (mobileMenuBtn && mobileMenu) {
+  const fermerMenu = () => {
+    mobileMenu.classList.remove('show');
+    mobileMenuBtn.setAttribute('aria-expanded', 'false');
+  };
+  mobileMenuBtn.addEventListener('click', () => {
+    const ouvert = mobileMenu.classList.toggle('show');
+    mobileMenuBtn.setAttribute('aria-expanded', ouvert ? 'true' : 'false');
+  });
+  // Un lien cliqué ferme le menu — le clic déclenche aussi la navigation
+  // vers l'ancre, qui se termine normalement une fois le plein écran retiré.
+  mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', fermerMenu));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') fermerMenu(); });
 }
 
 // Snapchat : pas de lien possible (aucune URL de profil web fiable), donc
