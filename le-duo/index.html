@@ -286,9 +286,52 @@
     text-decoration:none; transition:transform .2s ease, opacity .2s ease;
   }
   .socials img{ width:100%; height:100%; display:block; object-fit:cover; }
-  .socials a:hover, .socials a:focus-visible{ transform:scale(1.1); }
-  .socials .social-handle{ opacity:0.55; cursor:default; }
-  .social-note{ font-size:0.72rem; color:#a8a8a8; margin-top:10px; letter-spacing:0.03em; }
+  .socials a:hover, .socials a:focus-visible,
+  .socials .social-handle:hover, .socials .social-handle:focus-visible{ transform:scale(1.1); }
+  /* Snapchat n'a pas d'URL de profil publique fiable : le logo n'est donc
+     pas un lien mais un bouton qui révèle le pseudo à ajouter dans l'app. */
+  .socials .social-handle{
+    padding:0; border:0; background:none; cursor:pointer;
+    -webkit-appearance:none; appearance:none;
+  }
+  /* Sans JavaScript, le pseudo reste visible : c'est le script qui ajoute
+     .collapsible puis le referme. Aucun visiteur ne peut donc le perdre. */
+  .snap-reveal{ margin-top:14px; }
+  .snap-reveal.collapsible{
+    max-height:0; opacity:0; visibility:hidden; overflow:hidden; margin-top:0;
+    transition:max-height .35s ease, opacity .3s ease, margin-top .35s ease, visibility .35s;
+  }
+  .snap-reveal.collapsible.open{
+    max-height:140px; opacity:1; visibility:visible; margin-top:14px;
+  }
+  .snap-card{
+    display:inline-flex; align-items:center; gap:14px; flex-wrap:wrap;
+    justify-content:center;
+    border:1px solid #4a4a4a; background:rgba(255,255,255,0.04);
+    padding:10px 16px;
+  }
+  .snap-card .snap-pseudo{
+    font-family:'Jost', sans-serif; font-size:0.9rem; letter-spacing:0.1em;
+    color:var(--white);
+  }
+  .snap-copy{
+    font-family:'Jost', sans-serif; font-size:0.66rem; letter-spacing:0.14em;
+    text-transform:uppercase; color:#a8a8a8;
+    background:none; border:0; padding:0; cursor:pointer;
+    border-bottom:1px solid #6a6a6a;
+    transition:color .2s ease, border-color .2s ease;
+  }
+  .snap-copy:hover, .snap-copy:focus-visible{ color:var(--white); border-color:var(--white); }
+  /* Repère de découverte : le logo Snapchat n'étant pas un lien, rien
+     n'indique qu'il est cliquable — surtout au doigt, sans survol. */
+  .contact-band .snap-hint{ font-size:0.68rem; color:#8a8a8a; margin:12px 0 0; letter-spacing:0.04em; }
+  .snap-feedback{
+    display:block; min-height:1.1em;
+    font-size:0.7rem; color:#a8a8a8; margin-top:8px; letter-spacing:0.04em;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .snap-reveal.collapsible{ transition:none; }
+  }
   .contact-band .hours-line{ font-family:'Jost', sans-serif; letter-spacing:0.1em; margin-top:20px;}
   .map-embed{ margin-top:22px; border:1px solid #4a4a4a; line-height:0; }
   .map-embed iframe{
@@ -666,10 +709,17 @@
         <p>64 100 Bayonne.</p>
         <div class="socials">
           <a href="https://instagram.com/le_duo64" target="_blank" rel="noopener noreferrer" aria-label="Instagram — @le_duo64"><img src="photos/icon-instagram.png" alt="Instagram" loading="lazy"></a>
-          <span class="social-handle" title="Ajoutez-nous dans l'app Snapchat : le-duo64" aria-label="Snapchat : le-duo64"><img src="photos/icon-snapchat.png" alt="Snapchat" loading="lazy"></span>
+          <button type="button" class="social-handle" id="snapBtn" title="Afficher le pseudo Snapchat" aria-label="Afficher le pseudo Snapchat" aria-expanded="true" aria-controls="snapReveal"><img src="photos/icon-snapchat.png" alt="Snapchat" loading="lazy"></button>
           <a href="https://www.tiktok.com/@le_duo64" target="_blank" rel="noopener noreferrer" aria-label="TikTok — @le_duo64"><img src="photos/icon-tiktok.png" alt="TikTok" loading="lazy"></a>
         </div>
-        <p class="social-note">Snapchat : le-duo64</p>
+        <p class="snap-hint" id="snapHint" hidden>Cliquez sur le logo Snapchat pour afficher le pseudo.</p>
+        <div class="snap-reveal" id="snapReveal">
+          <div class="snap-card">
+            <span class="snap-pseudo">Snapchat&nbsp;: le-duo64</span>
+            <button type="button" class="snap-copy" id="snapCopy">Copier</button>
+          </div>
+          <span class="snap-feedback" id="snapFeedback" role="status" aria-live="polite"></span>
+        </div>
         <div class="hours-line">Horaires : 15h – 01h30</div>
         <!-- Contenu rempli par renderMap() selon le consentement : carte,
              bloc "refusé", ou invitation à afficher. Volontairement vide
@@ -745,6 +795,51 @@
 const preloader = document.getElementById('preloader');
 if (preloader) {
   preloader.addEventListener('animationend', () => preloader.remove());
+}
+
+// Snapchat : pas de lien possible (aucune URL de profil web fiable), donc
+// un clic sur le logo révèle le pseudo à recopier dans l'application. Le
+// bloc est visible par défaut dans le HTML ; c'est ce script qui le rend
+// repliable puis le referme, pour qu'une page sans JS affiche quand même
+// le pseudo.
+const snapBtn = document.getElementById('snapBtn');
+const snapReveal = document.getElementById('snapReveal');
+const snapHint = document.getElementById('snapHint');
+if (snapBtn && snapReveal) {
+  snapReveal.classList.add('collapsible');
+  snapBtn.setAttribute('aria-expanded', 'false');
+  if (snapHint) snapHint.hidden = false;
+  snapBtn.addEventListener('click', () => {
+    const ouvert = snapReveal.classList.toggle('open');
+    snapBtn.setAttribute('aria-expanded', ouvert ? 'true' : 'false');
+    snapBtn.setAttribute('title', ouvert ? 'Masquer le pseudo Snapchat' : 'Afficher le pseudo Snapchat');
+    if (snapHint) snapHint.hidden = ouvert;
+  });
+}
+
+const snapCopy = document.getElementById('snapCopy');
+const snapFeedback = document.getElementById('snapFeedback');
+let snapFeedbackTimer = null;
+function snapDire(texte) {
+  if (!snapFeedback) return;
+  snapFeedback.textContent = texte;
+  clearTimeout(snapFeedbackTimer);
+  snapFeedbackTimer = setTimeout(() => { snapFeedback.textContent = ''; }, 3000);
+}
+if (snapCopy) {
+  snapCopy.addEventListener('click', () => {
+    const pseudo = 'le-duo64';
+    // Le presse-papiers n'existe pas partout (vieux navigateurs, pages non
+    // sécurisées) : on le dit honnêtement plutôt que d'annoncer une copie
+    // qui n'a pas eu lieu.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(pseudo)
+        .then(() => snapDire('Pseudo copié'))
+        .catch(() => snapDire('Copie impossible — sélectionnez le pseudo ci-dessus.'));
+    } else {
+      snapDire('Copie impossible — sélectionnez le pseudo ci-dessus.');
+    }
+  });
 }
 
 // Cookies (RGPD) : le seul cookie tiers du site vient de l'iframe Google
