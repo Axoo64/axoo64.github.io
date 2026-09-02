@@ -1,0 +1,231 @@
+/* ==========================================================================
+   Skelvo — design system partagé (tokens, base, nav, boutons, footer)
+   Chargé par toutes les pages. Le style propre à chaque page (hero, sections
+   spécifiques) reste dans le <style> de la page elle-même.
+   ========================================================================== */
+
+:root{
+  --terracotta: #C1613A;
+  --terracotta-soft: #d9835f;
+  --petrole: #1F4A47;
+  --petrole-deep: #12302E;
+  --petrole-glow: #3E8A81;
+  --sable: #F6EFE6;
+  --charbon: #2A2521;
+  --max-w: 1180px;
+}
+
+*{ box-sizing: border-box; }
+html{ scroll-behavior: smooth; }
+
+body{
+  margin:0;
+  background: var(--sable);
+  color: var(--charbon);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,h2,h3, .display{
+  font-family: 'Space Grotesk', sans-serif;
+  margin: 0;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+a{ color: inherit; }
+
+.wrap{
+  max-width: var(--max-w);
+  margin: 0 auto;
+  /* Gauche/droite seulement — jamais le raccourci `padding: 0 32px` : sur
+     un élément qui porte à la fois .wrap et une classe de section (ex.
+     <section class="wrap approche">), le "0" écrasait silencieusement tout
+     padding-haut/bas de la section, laissant le titre collé sous la nav
+     avec zéro respiration. */
+  padding-left: 32px;
+  padding-right: 32px;
+}
+@media (max-width: 640px){
+  .wrap{ padding-left: 22px; padding-right: 22px; }
+}
+
+/* ---------- NAV ----------
+   Solid/light once the page's hero has scrolled out of view (toggled by
+   main.js via IntersectionObserver on [data-hero]) instead of relying on
+   mix-blend-mode, which reads unpredictably against varying backgrounds. */
+nav.top{
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 32px;
+  color: var(--sable);
+  --nav-border: rgba(246,239,230,0.4);
+  transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, padding 0.3s ease;
+}
+nav.top.scrolled, nav.top.is-light{
+  background: rgba(246,239,230,0.92);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: var(--charbon);
+  box-shadow: 0 1px 0 rgba(42,37,33,0.08);
+  padding: 15px 32px;
+  --nav-border: rgba(42,37,33,0.3);
+}
+@media (max-width: 480px){
+  nav.top{ padding: 16px 20px; }
+  nav.top.scrolled, nav.top.is-light{ padding: 12px 20px; }
+}
+nav.top .mark-wordmark{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: inherit;
+  text-decoration: none;
+}
+nav.top .mark-wordmark svg{ display:block; }
+nav.top .nav-links{
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+nav.top .nav-link{
+  color: inherit;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  opacity: 0.8;
+  padding-bottom: 2px;
+  border-bottom: 1px solid transparent;
+  transition: opacity 0.2s ease, border-color 0.2s ease;
+}
+nav.top .nav-link:hover{ opacity: 1; }
+nav.top .nav-link[aria-current="page"]{
+  opacity: 1;
+  border-bottom-color: var(--nav-border);
+}
+nav.top .nav-cta{
+  color: inherit;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-bottom: 1px solid var(--nav-border);
+  padding-bottom: 2px;
+}
+@media (max-width: 560px){
+  nav.top .nav-links{ gap: 16px; }
+  nav.top .nav-link:not([aria-current="page"]):not(.nav-cta){ display: none; }
+}
+
+/* ---------- BUTTONS ---------- */
+.btn-primary{
+  display: inline-block;
+  background: var(--terracotta);
+  color: var(--sable);
+  text-decoration: none;
+  padding: 15px 26px;
+  border-radius: 3px;
+  font-weight: 500;
+  font-size: 0.98rem;
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+.btn-primary:hover{ background: var(--terracotta-soft); transform: translateY(-1px); }
+
+.btn-secondary{
+  display: inline-block;
+  border: 1px solid rgba(246,239,230,0.35);
+  color: var(--sable);
+  text-decoration: none;
+  padding: 14px 24px;
+  border-radius: 3px;
+  font-size: 0.96rem;
+  font-weight: 500;
+  transition: border-color 0.25s ease, background 0.25s ease;
+}
+.btn-secondary:hover{ border-color: var(--sable); background: rgba(246,239,230,0.06); }
+
+.btn-secondary.on-light{
+  border-color: rgba(42,37,33,0.25);
+  color: var(--charbon);
+}
+.btn-secondary.on-light:hover{ border-color: var(--charbon); background: rgba(42,37,33,0.05); }
+
+/* Magnetic buttons: nudged toward the cursor within a radius by main.js,
+   which sets --mx/--my in px. Falls back to a plain button with no JS. */
+.btn-magnetic{ transform: translate(var(--mx, 0), var(--my, 0)); transition: transform 0.15s ease-out, background 0.25s ease; }
+
+/* ---------- SECTIONS (generic) ---------- */
+section{ padding: 130px 0; }
+/* Asymétrique sur mobile : la nav fixe mange une partie du padding-haut de
+   chaque section, donc les titres avaient l'air collés dessous ; et le
+   padding-bas symétrique (88/88, soit 176px cumulés à chaque frontière de
+   section) laissait un vide qui se voit trop sur un écran étroit et long.
+   Plus de haut, moins de bas. */
+@media (max-width: 640px){ section{ padding: 108px 0 60px; } }
+
+/* ---------- SITE FOOTER (minimal, every page) ---------- */
+footer.site{
+  background: var(--charbon);
+  color: rgba(246,239,230,0.55);
+  padding: 40px 0;
+  font-size: 0.85rem;
+}
+footer.site .wrap{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+footer.site a{ text-decoration: none; }
+footer.site a:hover{ color: var(--sable); }
+footer.site .site-links{ display: flex; gap: 20px; }
+
+/* ---------- CTA BAND (drives to /contact.html, reused on non-contact pages) ----------
+   Padding intentionally matches the generic `section` rule below rather than
+   using its own value — a one-off number here was the kind of unexplained
+   variance that made the vertical rhythm feel inconsistent page to page. */
+.cta-band{
+  background: var(--charbon);
+  color: var(--sable);
+  padding: 130px 0;
+}
+@media (max-width: 640px){ .cta-band{ padding: 88px 0; } }
+.cta-band h2{
+  font-size: clamp(2rem, 4.4vw, 3.2rem);
+  font-weight: 600;
+  max-width: 13ch;
+}
+.cta-band .lede{
+  margin-top: 18px;
+  color: rgba(246,239,230,0.66);
+  max-width: 44ch;
+  font-size: 1.05rem;
+}
+.cta-band .cta-row{ margin-top: 34px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+.cta-band .quick{ margin-top: 22px; font-size: 0.9rem; color: rgba(246,239,230,0.5); }
+.cta-band .quick a{ color: rgba(246,239,230,0.85); text-decoration: underline; text-underline-offset: 3px; }
+
+/* reveal-on-scroll (subtle, one IntersectionObserver drives every .reveal) */
+.reveal{
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.in{ opacity: 1; transform: translateY(0); }
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+}
+
+:focus-visible{
+  outline: 2px solid var(--terracotta);
+  outline-offset: 2px;
+}
