@@ -773,7 +773,7 @@
         <source src="photos/ambiance-video.mp4" type="video/mp4">
       </video>
     </div>
-    <p class="photo-note video-note">Ambiance filmée sur place — visages des clients floutés pour préserver leur anonymat.</p>
+    <p class="photo-note video-note">Ambiance filmée sur place.</p>
     <div class="gallery">
       <div class="g1 reveal"><img loading="lazy" src="photos/salle-neon-complet.jpg" alt="L'enseigne LE DUO et le salon"></div>
       <div class="reveal"><img loading="lazy" src="photos/narguile-fumee.jpg" alt="Narguilé Quasar"></div>
@@ -1142,24 +1142,33 @@ if ('IntersectionObserver' in window) {
   document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
 }
 
-// Vidéo d'ambiance : ne joue que pendant qu'elle est réellement à l'écran
-// (pause dès qu'on la quitte, plutôt que de la laisser tourner en fond
-// indéfiniment) et jamais si le visiteur préfère moins de mouvement — dans
-// ce cas elle reste sur son image de garde, immobile.
+// Vidéo d'ambiance — effet "Boomerang qu'on réveille" : figée comme une
+// photo au repos, elle ne se met en mouvement que pendant qu'on défile
+// réellement la page, et se fige à nouveau dès que le défilement
+// s'arrête (même logique que le pseudo Snapchat qui ne se révèle qu'au
+// clic : le mouvement est une réponse à une action, pas un fond permanent).
+// Jamais de lecture si le visiteur préfère moins de mouvement — elle
+// reste alors immobile sur son image de garde, quoi qu'il arrive.
 const ambianceVideo = document.querySelector('.ambiance-video video');
 if (ambianceVideo) {
   const prefersReducedMotion = window.matchMedia &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (!prefersReducedMotion && 'IntersectionObserver' in window) {
+    let videoInView = false;
+    let stopTimer = null;
+
     const videoObserver = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        ambianceVideo.play().catch(() => {}); // lecture auto refusée par le
-                                               // navigateur : reste sur le poster
-      } else {
-        ambianceVideo.pause();
-      }
+      videoInView = entry.isIntersecting;
+      if (!videoInView) ambianceVideo.pause(); // jamais en mouvement hors écran
     }, { threshold: 0.25 });
     videoObserver.observe(ambianceVideo);
+
+    window.addEventListener('scroll', () => {
+      if (!videoInView) return;
+      ambianceVideo.play().catch(() => {}); // lecture auto refusée : reste sur le poster
+      clearTimeout(stopTimer);
+      stopTimer = setTimeout(() => ambianceVideo.pause(), 220);
+    }, { passive: true });
   }
 }
 
