@@ -114,17 +114,19 @@ nav.top .nav-link[aria-current="page"]{
   opacity: 1;
   color: var(--terracotta);
 }
+/* Plus de trait permanent : "Contact" se distinguait des deux autres
+   liens (soulignement même hors page active) — désormais tous les liens
+   partagent le même repère (couleur), Contact restant reconnaissable par
+   sa pleine opacité (contre 0.8 pour les autres au repos). */
 nav.top .nav-cta{
   color: inherit;
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
-  border-bottom: 1px solid var(--nav-border);
   padding-bottom: 2px;
 }
 nav.top .nav-cta[aria-current="page"]{
   color: var(--terracotta);
-  border-bottom-color: transparent;
 }
 @media (max-width: 560px){
   nav.top .nav-links{ gap: 14px; }
