@@ -230,6 +230,19 @@ footer.site .site-links{ display: flex; gap: 20px; }
 .cta-band .quick{ margin-top: 22px; font-size: 0.9rem; color: rgba(246,239,230,0.5); }
 .cta-band .quick a{ color: rgba(246,239,230,0.85); text-decoration: underline; text-underline-offset: 3px; }
 
+/* ---------- Transition de page ----------
+   Voile plein écran, injecté par main.js, qui masque la page juste avant
+   de naviguer vers une autre page du site — remplace le rechargement sec
+   par un fondu court et volontaire. */
+.page-transition-veil{
+  position: fixed; inset: 0; z-index: 999;
+  background: var(--charbon);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+html.page-leave .page-transition-veil{ opacity: 1; }
+
 /* reveal-on-scroll (subtle, one IntersectionObserver drives every .reveal) */
 .reveal{
   opacity: 0;
