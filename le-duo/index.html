@@ -128,6 +128,38 @@
 
   section{ padding:clamp(40px, 7vh, 80px) 6vw; }
 
+  /* ---- barre discrète du haut (PC uniquement) ----
+     Le site n'a pas de menu fixe : une fois l'accueil dépassé, il faut
+     remonter tout en haut ou descendre jusqu'au pied de page pour
+     naviguer. Cette barre reprend juste ce que la page propose déjà
+     (Ambiance / Carte / Contact, le téléphone) et n'apparaît qu'une fois
+     l'accueil quitté — sur mobile, où l'on défile au pouce, elle serait
+     de trop et reste masquée (voir le @media plus bas). */
+  .sticky-nav{
+    position:fixed; top:0; left:0; right:0; z-index:900;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:24px; padding:14px 6vw;
+    background:rgba(242,241,239,0.94);
+    border-bottom:1px solid var(--line);
+    transform:translateY(-100%);
+    transition:transform .3s ease;
+  }
+  .sticky-nav.show{ transform:translateY(0); }
+  .sticky-nav .brand{
+    font-family:'Jost', sans-serif; letter-spacing:0.18em; font-size:0.95rem;
+    text-transform:uppercase; text-decoration:none; color:var(--black);
+  }
+  .sticky-nav .links{ display:flex; align-items:center; gap:28px; }
+  .sticky-nav .links a{
+    font-family:'Jost', sans-serif; font-size:0.78rem; letter-spacing:0.08em;
+    text-transform:uppercase; text-decoration:none; color:var(--ink-dim);
+    transition:color .2s ease;
+  }
+  .sticky-nav .links a:hover, .sticky-nav .links a:focus-visible{ color:var(--black); }
+  .sticky-nav .phone{ font-size:0.8rem; color:var(--ink-dim); white-space:nowrap; }
+  @media (max-width:780px){ .sticky-nav{ display:none; } }
+  @media (prefers-reduced-motion: reduce){ .sticky-nav{ transition:none; } }
+
   /* Chaque grand bloc occupe au moins tout l'écran : l'accueil, l'ambiance
      et le contact tiennent naturellement sur un seul écran et s'y centrent
      verticalement. La carte, elle, contient volontairement tout le menu
@@ -595,7 +627,7 @@
     .contact-grid{ grid-template-columns:1fr; gap:36px; }
   }
 </style>
-<noscript><style>.reveal{opacity:1!important; transform:none!important;} .preloader{display:none!important;}</style></noscript>
+<noscript><style>.reveal{opacity:1!important; transform:none!important;} .preloader{display:none!important;} .sticky-nav{position:static!important; transform:none!important;}</style></noscript>
 </head>
 <body>
 
@@ -606,6 +638,16 @@
     <span>Ouvert 15h – 01h30 · 7j/7</span>
     <span>07 88 90 92 96</span>
   </div>
+
+  <nav class="sticky-nav" id="stickyNav" aria-label="Navigation">
+    <a href="#" class="brand">Le Duo</a>
+    <div class="links">
+      <a href="#ambiance">Ambiance</a>
+      <a href="#carte">Carte</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <span class="phone">07 88 90 92 96</span>
+  </nav>
 
   <header class="hero" style="position:relative;">
     <div class="smoke-layer" aria-hidden="true">
@@ -816,6 +858,25 @@
 const preloader = document.getElementById('preloader');
 if (preloader) {
   preloader.addEventListener('animationend', () => preloader.remove());
+}
+
+// Barre discrète du haut (PC) : apparaît une fois l'accueil quitté. Un
+// IntersectionObserver plutôt qu'un écouteur de scroll — même logique que
+// les .reveal plus bas — pour ne rien recalculer à chaque pixel défilé.
+// Masquée par défaut (voir .sticky-nav en CSS) : si l'observer ne se
+// déclenche jamais pour une raison quelconque, elle reste simplement
+// invisible en haut de page plutôt que de gêner la lecture.
+const stickyNav = document.getElementById('stickyNav');
+const heroEl = document.querySelector('header.hero');
+if (stickyNav && heroEl) {
+  if ('IntersectionObserver' in window) {
+    const navObserver = new IntersectionObserver(([entry]) => {
+      stickyNav.classList.toggle('show', !entry.isIntersecting);
+    }, { threshold: 0 });
+    navObserver.observe(heroEl);
+  } else {
+    stickyNav.classList.add('show');
+  }
 }
 
 // Snapchat : pas de lien possible (aucune URL de profil web fiable), donc
