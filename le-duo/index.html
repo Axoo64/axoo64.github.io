@@ -302,9 +302,11 @@
   }
   .ambiance-video video{
     display:block; width:100%; height:320px; object-fit:cover;
-    object-position:center 40%; /* le clip est vertical, la bande affichée
-      est étroite : "center" coupait le sujet et "top" ne montrait que le
-      mur. À 40%, on voit le bouquet en entier plus le haut des chichas. */
+    object-position:center 20%; /* mesuré image par image : le mouvement du
+      clip est concentré presque en totalité dans le haut du cadre (mur
+      pailleté) — le bas (bouquet) bouge à peine. On recadre donc sur le
+      haut des chichas (têtes + bulle en cristal) pour garder ce mouvement
+      visible tout en ayant un sujet reconnaissable. */
     cursor:pointer;
   }
   @media (max-width:600px){ .ambiance-video video{ height:260px; } }
