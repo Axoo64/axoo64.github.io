@@ -296,21 +296,18 @@
   .photo-note::before, .photo-note::after{
     content:''; height:1px; width:36px; background:var(--accent-pink);
   }
-  /* Le clip est un format "story" vertical (téléphone) : plutôt que
-     l'étirer/le découper dans une bande large et courte — où l'on ne
-     voyait presque plus rien bouger — on l'affiche entier, à sa vraie
-     proportion, comme une carte verticale centrée. */
   .ambiance-video{
     max-width:1320px; margin:0 auto 16px;
-    background:var(--marble-vein);
-    display:flex; justify-content:center;
+    background:var(--marble-vein); line-height:0;
   }
   .ambiance-video video{
-    display:block; height:480px; width:auto; max-width:100%;
+    display:block; width:100%; height:320px; object-fit:cover;
+    object-position:center 40%; /* le clip est vertical, la bande affichée
+      est étroite : "center" coupait le sujet et "top" ne montrait que le
+      mur. À 40%, on voit le bouquet en entier plus le haut des chichas. */
     cursor:pointer;
   }
-  @media (max-width:780px){ .ambiance-video video{ height:400px; } }
-  @media (max-width:480px){ .ambiance-video video{ height:340px; } }
+  @media (max-width:600px){ .ambiance-video video{ height:260px; } }
 
   /* ---- lightbox : clic sur une photo de la galerie pour l'agrandir ---- */
   .lightbox{
