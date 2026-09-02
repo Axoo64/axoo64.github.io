@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page introuvable | ABS-Cover</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#0a0a0b; --white:#f5f4f2; --grey:#9a9a9d;
+    --line:rgba(245,244,242,0.1); --accent:#e8352b;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--black); color:var(--white); font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased;
+    min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:24px;
+  }
+  .code{font-family:'Bebas Neue',sans-serif; font-size:clamp(80px,20vw,180px); line-height:0.9; color:transparent; -webkit-text-stroke:2px var(--accent); letter-spacing:0.02em;}
+  h1{font-family:'Bebas Neue',sans-serif; font-size:clamp(28px,5vw,42px); margin:10px 0 14px; letter-spacing:0.01em;}
+  p{color:var(--grey); font-size:15px; max-width:420px; line-height:1.7; margin-bottom:32px;}
+  .btn{
+    font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:0.04em; text-transform:uppercase;
+    padding:16px 28px; text-decoration:none; display:inline-block; border:1px solid var(--white); color:var(--white);
+    transition:all .2s ease; margin:0 6px;
+  }
+  .btn.fill{background:var(--accent); border-color:var(--accent); font-weight:700;}
+  .btn.fill:hover{background:var(--white); border-color:var(--white); color:var(--black);}
+  .btn:not(.fill):hover{background:var(--white); color:var(--black);}
+  .actions{display:flex; gap:12px; flex-wrap:wrap; justify-content:center;}
+</style>
+</head>
+<body>
+  <div class="code">404</div>
+  <h1>Cette page n'existe pas (ou plus)</h1>
+  <p>Le lien que vous avez suivi est peut-être cassé, ou la page a été déplacée. Revenez à l'accueil ou appelez-nous directement.</p>
+  <div class="actions">
+    <a class="btn fill" href="index.html">Retour à l'accueil</a>
+    <a class="btn" href="tel:0631812421">Appeler : 06 31 81 24 21</a>
+  </div>
+</body>
+</html>
