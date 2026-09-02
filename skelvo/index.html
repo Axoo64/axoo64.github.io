@@ -177,16 +177,17 @@
      d'être recadrée en 4:3. */
   .work-card .thumb{ display: block; aspect-ratio: 4 / 3; overflow: hidden; background: var(--petrole-deep); }
   .work-card .thumb img{ width: 100%; height: 100%; object-fit: cover; display: block; }
-  /* Deux couches de fond empilées : la photo d'abord, le dégradé de marque
-     dessous. Si img/abs-cover.jpg est absent (cas de l'aperçu GitHub Pages, où
-     je ne peux pas déposer de fichier image), le navigateur ignore simplement
-     la couche manquante et affiche le dégradé — jamais d'icône "image cassée".
-     Le jour où la photo est déposée, elle apparaît sans toucher au code. */
+  /* Trois couches de fond empilées, de la plus prioritaire à la dernière :
+     la photo locale, puis celle du CDN Wix d'ABS-Cover, puis le dégradé de
+     marque. Une couche dont le fichier est absent est simplement ignorée par
+     le navigateur — donc jamais d'icône "image cassée", et déposer
+     img/abs-cover.jpg suffit à basculer sur la version auto-hébergée sans
+     toucher au code. */
   .work-card .thumb.pending{
-    background-image: url("img/abs-cover.jpg"), linear-gradient(135deg, var(--petrole-glow) 0%, var(--petrole-deep) 55%, var(--terracotta) 140%);
-    background-size: cover, cover;
-    background-position: center, center;
-    background-repeat: no-repeat, no-repeat;
+    background-image: url("img/abs-cover.jpg"), url("https://static.wixstatic.com/media/81cf68_bcb078de360f4faebc8554a7d84950ea~mv2.jpg/v1/fit/w_1600,q_85,enc_auto/81cf68_bcb078de360f4faebc8554a7d84950ea~mv2.jpg"), linear-gradient(135deg, var(--petrole-glow) 0%, var(--petrole-deep) 55%, var(--terracotta) 140%);
+    background-size: cover, cover, cover;
+    background-position: center, center, center;
+    background-repeat: no-repeat, no-repeat, no-repeat;
   }
   .work-card .work-body{ padding: 20px 22px 22px; }
   .work-card .work-tag{ font-size: 0.8rem; color: var(--terracotta-soft); font-weight: 500; }
