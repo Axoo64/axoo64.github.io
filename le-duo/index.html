@@ -296,6 +296,14 @@
   .photo-note::before, .photo-note::after{
     content:''; height:1px; width:36px; background:var(--accent-pink);
   }
+  .ambiance-video{
+    max-width:1320px; margin:0 auto 16px;
+    background:var(--marble-vein); line-height:0;
+  }
+  .ambiance-video video{
+    display:block; width:100%; height:320px; object-fit:cover;
+  }
+  @media (max-width:600px){ .ambiance-video video{ height:260px; } }
 
   /* ---- lightbox : clic sur une photo de la galerie pour l'agrandir ---- */
   .lightbox{
@@ -759,6 +767,13 @@
       <span class="num">L'ambiance</span>
       <h2>Le lieu</h2>
     </div>
+    <div class="ambiance-video reveal" aria-hidden="true">
+      <video poster="photos/ambiance-video-poster.jpg" muted loop playsinline preload="metadata">
+        <source src="photos/ambiance-video.webm" type="video/webm">
+        <source src="photos/ambiance-video.mp4" type="video/mp4">
+      </video>
+    </div>
+    <p class="photo-note video-note">Ambiance filmée sur place — visages des clients floutés pour préserver leur anonymat.</p>
     <div class="gallery">
       <div class="g1 reveal"><img loading="lazy" src="photos/salle-neon-complet.jpg" alt="L'enseigne LE DUO et le salon"></div>
       <div class="reveal"><img loading="lazy" src="photos/narguile-fumee.jpg" alt="Narguilé Quasar"></div>
@@ -1125,6 +1140,27 @@ if ('IntersectionObserver' in window) {
   document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 } else {
   document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
+}
+
+// Vidéo d'ambiance : ne joue que pendant qu'elle est réellement à l'écran
+// (pause dès qu'on la quitte, plutôt que de la laisser tourner en fond
+// indéfiniment) et jamais si le visiteur préfère moins de mouvement — dans
+// ce cas elle reste sur son image de garde, immobile.
+const ambianceVideo = document.querySelector('.ambiance-video video');
+if (ambianceVideo) {
+  const prefersReducedMotion = window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!prefersReducedMotion && 'IntersectionObserver' in window) {
+    const videoObserver = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        ambianceVideo.play().catch(() => {}); // lecture auto refusée par le
+                                               // navigateur : reste sur le poster
+      } else {
+        ambianceVideo.pause();
+      }
+    }, { threshold: 0.25 });
+    videoObserver.observe(ambianceVideo);
+  }
 }
 
 // Galerie "L'ambiance" : clic sur une photo pour l'agrandir.
