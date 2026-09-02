@@ -127,6 +127,27 @@
   }
 
   section{ padding:clamp(40px, 7vh, 80px) 6vw; }
+
+  /* Chaque grand bloc occupe au moins tout l'écran : l'accueil, l'ambiance
+     et le contact tiennent naturellement sur un seul écran et s'y centrent
+     verticalement. La carte, elle, contient volontairement tout le menu
+     réel du Duo — plus long qu'un écran — donc "au moins" tout l'écran,
+     puis elle continue normalement au défilement plutôt que de couper des
+     plats pour tenir dans un cadre fixe. */
+  header.hero, #ambiance, #carte, .contact-band{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  @supports (min-height: 100svh){
+    header.hero, #ambiance, #carte, .contact-band{ min-height:100svh; }
+  }
+  /* Un enfant direct d'un conteneur flex ne rétrécit pas sous la largeur de
+     son propre contenu par défaut (min-width:auto) — sans ça, les grilles
+     ci-dessous (photos, tarifs, menu) gardaient leur largeur "idéale" et
+     débordaient de l'écran au lieu de se replier normalement. */
+  header.hero > *, #ambiance > *, #carte > *, .contact-band > *{ min-width:0; width:100%; }
   .section-head{
     text-align:center;
     margin-bottom:clamp(30px, 6vh, 70px);
