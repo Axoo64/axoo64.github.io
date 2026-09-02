@@ -238,15 +238,22 @@
      verticalement. La carte, elle, contient volontairement tout le menu
      réel du Duo — plus long qu'un écran — donc "au moins" tout l'écran,
      puis elle continue normalement au défilement plutôt que de couper des
-     plats pour tenir dans un cadre fixe. */
+     plats pour tenir dans un cadre fixe.
+
+     --app-vh (posé en JS, voir plus bas) plutôt que 100vh/100svh : sur
+     mobile, quand la barre d'adresse du navigateur se réduit au
+     défilement, une hauteur suivie en direct fait "sauter" instantanément
+     l'image de fond (cover) qui doit se recadrer — un vrai bug visuel,
+     surtout dans un navigateur intégré (Instagram, etc.) qui gère souvent
+     mal les unités récentes. --app-vh fige la valeur au chargement et ne
+     la recalcule qu'au changement d'orientation, jamais pendant un scroll.
+     var(--app-vh, 1vh) : tant que le JS n'a pas encore tourné (ou sur un
+     très vieux navigateur), 1vh sert de repli identique à 100vh. */
   header.hero, #ambiance, #carte, .contact-band{
-    min-height:100vh;
+    min-height:calc(var(--app-vh, 1vh) * 100);
     display:flex;
     flex-direction:column;
     justify-content:center;
-  }
-  @supports (min-height: 100svh){
-    header.hero, #ambiance, #carte, .contact-band{ min-height:100svh; }
   }
   /* Un enfant direct d'un conteneur flex ne rétrécit pas sous la largeur de
      son propre contenu par défaut (min-width:auto) — sans ça, les grilles
@@ -974,6 +981,30 @@
   </div>
 
 <script>
+// Hauteur d'écran mobile figée au chargement (voir --app-vh en CSS) : sur
+// mobile, la barre d'adresse du navigateur se réduit au défilement, ce
+// qui change la hauteur réelle de l'écran en direct. Une section calée
+// sur 100vh/100svh suit ce changement en direct et son image de fond
+// (cover) doit alors se recadrer instantanément — un flash de "zoom"
+// brutal au moindre scroll un peu rapide, encore pire dans un navigateur
+// intégré (Instagram, etc.) qui gère souvent mal ces unités récentes.
+// On mesure donc la hauteur une fois, et on ne la recalcule qu'au
+// changement d'orientation (redimensionnement réel), jamais pendant un
+// défilement — placé tout en haut du script pour tourner avant que
+// l'utilisateur ait pu scroller.
+function updateAppVh() {
+  document.documentElement.style.setProperty('--app-vh', (window.innerHeight * 0.01) + 'px');
+}
+updateAppVh();
+let appVhResizeTimer = null;
+window.addEventListener('resize', () => {
+  // Le délai laisse le temps à l'animation de la barre d'adresse de se
+  // terminer avant de remesurer — sans ça on retomberait dans le même
+  // problème, juste décalé de quelques millisecondes.
+  clearTimeout(appVhResizeTimer);
+  appVhResizeTimer = setTimeout(updateAppVh, 200);
+});
+
 // Écran de chargement : l'affichage/masquage est piloté entièrement en
 // CSS (voir @keyframes preloaderAutoHide) — plus aucune dépendance au
 // JavaScript pour qu'il disparaisse. Un bug JS l'a déjà laissé bloqué
