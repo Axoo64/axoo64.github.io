@@ -296,14 +296,21 @@
   .photo-note::before, .photo-note::after{
     content:''; height:1px; width:36px; background:var(--accent-pink);
   }
+  /* Le clip est un format "story" vertical (téléphone) : plutôt que
+     l'étirer/le découper dans une bande large et courte — où l'on ne
+     voyait presque plus rien bouger — on l'affiche entier, à sa vraie
+     proportion, comme une carte verticale centrée. */
   .ambiance-video{
     max-width:1320px; margin:0 auto 16px;
-    background:var(--marble-vein); line-height:0;
+    background:var(--marble-vein);
+    display:flex; justify-content:center;
   }
   .ambiance-video video{
-    display:block; width:100%; height:320px; object-fit:cover;
+    display:block; height:480px; width:auto; max-width:100%;
+    cursor:pointer;
   }
-  @media (max-width:600px){ .ambiance-video video{ height:260px; } }
+  @media (max-width:780px){ .ambiance-video video{ height:400px; } }
+  @media (max-width:480px){ .ambiance-video video{ height:340px; } }
 
   /* ---- lightbox : clic sur une photo de la galerie pour l'agrandir ---- */
   .lightbox{
@@ -312,10 +319,11 @@
     z-index:999; padding:5vh 5vw; cursor:zoom-out;
   }
   .lightbox.show{ display:flex; }
-  .lightbox img{
+  .lightbox img, .lightbox video{
     max-width:100%; max-height:100%; object-fit:contain; display:block;
     box-shadow:0 20px 60px rgba(0,0,0,0.5); cursor:default;
   }
+  .lightbox video{ display:none; }
   .lightbox-close{
     position:absolute; top:18px; right:26px; color:#fff; font-size:2.2rem; line-height:1;
     cursor:pointer; font-family:'Jost', sans-serif; font-weight:300;
@@ -767,8 +775,9 @@
       <span class="num">L'ambiance</span>
       <h2>Le lieu</h2>
     </div>
-    <div class="ambiance-video reveal" aria-hidden="true">
-      <video poster="photos/ambiance-video-poster.jpg" muted loop playsinline preload="metadata">
+    <div class="ambiance-video reveal">
+      <video poster="photos/ambiance-video-poster.jpg" muted loop playsinline preload="metadata"
+             role="button" tabindex="0" aria-label="Agrandir la vidéo de l'ambiance">
         <source src="photos/ambiance-video.webm" type="video/webm">
         <source src="photos/ambiance-video.mp4" type="video/mp4">
       </video>
@@ -945,6 +954,7 @@
   <div class="lightbox" id="lightbox">
     <span class="lightbox-close" id="lightboxClose" aria-label="Fermer">&times;</span>
     <img id="lightboxImg" src="" alt="">
+    <video id="lightboxVideo" muted loop playsinline></video>
   </div>
 
 <script>
@@ -1175,16 +1185,51 @@ if (ambianceVideo) {
 // Galerie "L'ambiance" : clic sur une photo pour l'agrandir.
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightboxImg');
+const lightboxVideo = document.getElementById('lightboxVideo');
+
+function closeLightbox() {
+  lightbox.classList.remove('show');
+  lightboxVideo.pause();
+  lightboxVideo.removeAttribute('src');   // libère le téléchargement en cours
+  lightboxVideo.innerHTML = '';
+  lightboxVideo.style.display = 'none';
+  lightboxImg.style.display = 'block';
+}
+
 document.querySelectorAll('.gallery img, .narg-photo, .carte-cat-photo').forEach(img => {
   img.addEventListener('click', () => {
     lightboxImg.src = img.src;
     lightboxImg.alt = img.alt;
+    lightboxImg.style.display = 'block';
+    lightboxVideo.style.display = 'none';
     lightbox.classList.add('show');
   });
 });
-lightbox.addEventListener('click', () => lightbox.classList.remove('show'));
-document.getElementById('lightboxClose').addEventListener('click', () => lightbox.classList.remove('show'));
-document.addEventListener('keydown', e => { if (e.key === 'Escape') lightbox.classList.remove('show'); });
+
+// Vidéo d'ambiance : cliquer dessus l'ouvre en grand, à sa taille réelle,
+// et la lance directement — le format "carte" réduit ne montrait pas
+// assez le mouvement pour qu'on comprenne que c'est une vidéo.
+if (ambianceVideo) {
+  const openAmbianceVideoLightbox = () => {
+    lightboxVideo.innerHTML = ambianceVideo.innerHTML; // mêmes sources (webm + mp4)
+    lightboxImg.style.display = 'none';
+    lightboxVideo.style.display = 'block';
+    lightbox.classList.add('show');
+    lightboxVideo.load();
+    lightboxVideo.play().catch(() => {});
+  };
+  ambianceVideo.addEventListener('click', openAmbianceVideoLightbox);
+  ambianceVideo.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault(); // évite que la barre d'espace ne fasse défiler la page
+      openAmbianceVideoLightbox();
+    }
+  });
+}
+
+lightbox.addEventListener('click', closeLightbox);
+document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
 const CONTACT_EMAIL = 'contact@leduo64.com'; // à confirmer avec le vrai contact du Duo
 
