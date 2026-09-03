@@ -17,6 +17,16 @@
   --violet:#8B2FD9;
   --violet-soft:#C293F2;
   --violet-deep:#3D1259;
+  /* plis de rideau reutilises par le panneau mobile et sa bavure de
+     securite (::before) -- un seul degrade defini une fois. */
+  --curtain-fold:
+    repeating-linear-gradient(90deg,
+      rgba(10,3,18,0.55) 0px,
+      rgba(10,3,18,0.15) 6px,
+      rgba(194,147,242,0.22) 16px,
+      rgba(10,3,18,0.15) 26px,
+      rgba(10,3,18,0.55) 34px),
+    linear-gradient(180deg, var(--violet-deep) 0%, #1B0A29 72%, var(--ink) 100%);
   --white:#F5F3F8;
   --white-dim:rgba(245,243,248,0.66);
   --line:rgba(245,243,248,0.14);
@@ -91,14 +101,28 @@ noscript .reveal, html.no-js .reveal{ opacity:1; transform:none; }
 /* faisceau volontairement etroit (140px) -- un cone large a la meme
    echelle que l'ecran rendait la rotation quasi invisible (le flare du
    cone dominait le rendu quelle que soit l'angle). Etroit, le pivot se
-   voit clairement balayer d'un bord vers le centre. */
+   voit clairement balayer d'un bord vers le centre.
+   Volumetrique : flou + un point chaud pres de la lampe (haut) qui
+   s'estompe vers la base, plus un coeur plus lumineux et plus net
+   par-dessus (::before) -- pour lire comme un vrai faisceau qui
+   traverse l'air, pas un triangle plat en degrade uniforme. */
 .spotlight{
   position:absolute; top:-15%; width:140px; height:140%;
-  background:linear-gradient(180deg, rgba(230,215,255,0.6) 0%, rgba(230,215,255,0.16) 55%, rgba(230,215,255,0) 85%);
+  background:
+    radial-gradient(ellipse 70px 90px at 50% 0%, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.25) 45%, rgba(255,255,255,0) 75%),
+    linear-gradient(180deg, rgba(224,206,255,0.55) 0%, rgba(224,206,255,0.22) 40%, rgba(224,206,255,0.06) 72%, rgba(224,206,255,0) 92%);
   clip-path:polygon(46% 0%, 54% 0%, 100% 100%, 0% 100%);
   mix-blend-mode:screen;
   opacity:0;
   transform-origin:top center;
+  filter:blur(7px);
+}
+.spotlight::before{
+  content:"";
+  position:absolute; inset:0;
+  clip-path:polygon(49% 0%, 51% 0%, 60% 100%, 40% 100%);
+  background:linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.4) 45%, rgba(255,255,255,0) 80%);
+  filter:blur(1.5px);
 }
 .spotlight-l{ left:22%; animation:sweepL 1.05s cubic-bezier(.2,.6,.25,1) .15s forwards; }
 .spotlight-r{ right:22%; animation:sweepR 1.05s cubic-bezier(.2,.6,.25,1) .25s forwards; }
@@ -168,43 +192,49 @@ nav.top.scrolled{ background:rgba(10,10,13,0.92); -webkit-backdrop-filter:blur(1
    et se stabilise apres etre tombe, plutot qu'un arret sec). Les plis
    sont un degrade repete avec plusieurs arrets doux (pas des bandes
    franches) pour un effet arrondi/cylindrique comme du velours, dans
-   les tons violet du site. Une frange en zigzag marque l'ourlet bas. */
+   les tons violet du site. Une frange arrondie (festons, pas des
+   zigzags) marque l'ourlet bas.
+   Ouverture et fermeture ont CHACUNE leur propre transition (definie
+   respectivement sur .mobile-panel.open et sur .mobile-panel) : le
+   rebond "back" n'a de sens qu'a l'arrivee -- applique tel quel a la
+   fermeture, ca rendait le retrait saccade. */
 .mobile-panel{
   position:fixed; top:0; left:0; right:0; z-index:49;
   padding:88px 20px 34px;
-  background:
-    repeating-linear-gradient(90deg,
-      rgba(10,3,18,0.55) 0px,
-      rgba(10,3,18,0.15) 6px,
-      rgba(194,147,242,0.22) 16px,
-      rgba(10,3,18,0.15) 26px,
-      rgba(10,3,18,0.55) 34px),
-    linear-gradient(180deg, var(--violet-deep) 0%, #1B0A29 72%, var(--ink) 100%);
+  background:var(--curtain-fold);
   box-shadow:0 18px 40px rgba(0,0,0,0.5);
-  /* -100% ne suffit pas : la frange en ::after depasse de 12px sous le
-     panneau (bottom:-11px + hauteur 11px), donc -100% seul laissait un
-     mini bout de frange visible en haut de l'ecran meme menu ferme. */
-  transform:translateY(calc(-100% - 12px));
-  transition:transform .85s cubic-bezier(.34,1.42,.64,1);
+  /* -100% ne suffit pas : la frange en ::after depasse de 14px sous le
+     panneau, donc -100% seul laissait un mini bout de frange visible
+     en haut de l'ecran meme menu ferme. */
+  transform:translateY(calc(-100% - 14px));
+  transition:transform .45s cubic-bezier(.4,0,.2,1); /* fermeture : simple et rapide */
 }
-.mobile-panel.open{ transform:translateY(0); }
+.mobile-panel.open{
+  transform:translateY(0);
+  transition:transform .85s cubic-bezier(.3,1.2,.55,1); /* ouverture : rebond, moins extreme qu'avant */
+}
+/* bavure de securite : meme etoffe que le rideau, cachee au-dessus de
+   l'ecran au repos -- si le rebond depasse legerement translateY(0),
+   c'est cette reserve qui se decouvre, jamais un trou vers la page. */
+.mobile-panel::before{
+  content:""; position:absolute; left:0; right:0; top:-80px; height:80px;
+  background:var(--curtain-fold);
+}
 .mobile-panel::after{
-  content:""; position:absolute; left:0; right:0; bottom:-11px; height:11px;
-  background:
-    linear-gradient(135deg, var(--violet) 50%, transparent 50%),
-    linear-gradient(-135deg, var(--violet) 50%, transparent 50%);
-  background-size:18px 11px; background-repeat:repeat-x;
-  opacity:.9;
+  content:""; position:absolute; left:0; right:0; bottom:-13px; height:14px;
+  background-image:radial-gradient(circle at 10px 0, transparent 9px, var(--violet-deep) 9.5px);
+  background-size:20px 14px; background-repeat:repeat-x;
+  filter:drop-shadow(0 3px 3px rgba(0,0,0,0.35));
 }
-.mobile-panel a{ display:block; padding:13px 0; font-weight:600; border-bottom:1px solid rgba(245,243,248,0.16); opacity:0; transform:translateY(-8px); transition:opacity .3s ease, transform .3s ease; }
-.mobile-panel.open a{ opacity:1; transform:none; }
-.mobile-panel a:nth-child(1){ transition-delay:.5s; }
-.mobile-panel a:nth-child(2){ transition-delay:.56s; }
-.mobile-panel a:nth-child(3){ transition-delay:.62s; }
-.mobile-panel a:nth-child(4){ transition-delay:.68s; }
-.mobile-panel a:nth-child(5){ transition-delay:.74s; }
+.mobile-panel a{ display:block; padding:13px 0; font-weight:600; border-bottom:1px solid rgba(245,243,248,0.16); opacity:0; transform:translateY(-8px); transition:opacity .2s ease; }
+.mobile-panel.open a{ opacity:1; transform:none; transition:opacity .3s ease, transform .3s ease; }
+.mobile-panel.open a:nth-child(1){ transition-delay:.5s; }
+.mobile-panel.open a:nth-child(2){ transition-delay:.56s; }
+.mobile-panel.open a:nth-child(3){ transition-delay:.62s; }
+.mobile-panel.open a:nth-child(4){ transition-delay:.68s; }
+.mobile-panel.open a:nth-child(5){ transition-delay:.74s; }
 @media (prefers-reduced-motion: reduce){
-  .mobile-panel, .mobile-panel a{ transition:none; }
+  .mobile-panel, .mobile-panel.open, .mobile-panel a, .mobile-panel.open a{ transition:none; }
   .mobile-panel a{ opacity:1; transform:none; }
 }
 /* .mobile-panel a plus bas ecrase display/padding/border-bottom pour
