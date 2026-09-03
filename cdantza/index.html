@@ -278,20 +278,13 @@ nav.top.scrolled{ background:rgba(10,10,13,0.92); -webkit-backdrop-filter:blur(1
 .courses-scroll{ display:flex; gap:14px; overflow-x:auto; scroll-snap-type:x proximity; padding-top:6px; padding-bottom:8px; margin:0 -32px; padding-left:32px; padding-right:32px; scrollbar-width:none; }
 .courses-scroll::-webkit-scrollbar{ display:none; }
 @media (max-width:640px){ .courses-scroll{ margin:0 -22px; padding-left:22px; padding-right:22px; } }
-/* fleches : indispensables sur desktop ou rien ne signale que la ligne
-   defile (pas de barre de scroll, pas de swipe tactile). */
-.courses-arrow{
-  position:absolute; top:50%; transform:translateY(-50%); z-index:5;
-  width:42px; height:42px; border-radius:50%;
-  background:var(--ink-elev); border:1px solid var(--line); color:var(--white);
-  font-size:1.5rem; line-height:1; cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
-  transition:background .2s ease, border-color .2s ease, transform .2s ease;
-}
-.courses-arrow:hover{ border-color:var(--violet); background:var(--violet-deep); }
-.courses-arrow-l{ left:-8px; }
-.courses-arrow-r{ right:-8px; }
-@media (max-width:780px){ .courses-arrow{ display:none; } } /* swipe tactile natif sur mobile/tablette */
+/* barre de defilement personnalisee : plus discrete que des fleches
+   flottantes, et utilisable a la souris (glisser le curseur) comme au
+   doigt. Cachee automatiquement si tout tient dans la largeur (voir
+   updateCoursesThumb en JS, qui masque coursesScrollbar dans ce cas). */
+.courses-scrollbar{ position:relative; height:5px; border-radius:100px; background:rgba(245,243,248,0.12); margin-top:20px; cursor:pointer; }
+.courses-scrollbar-thumb{ position:absolute; top:0; left:0; height:100%; border-radius:100px; background:var(--violet); cursor:grab; touch-action:none; }
+.courses-scrollbar-thumb:active{ cursor:grabbing; }
 .course-card{ scroll-snap-align:start; flex:0 0 auto; min-width:200px; background:var(--ink-elev); border:1px solid var(--line); border-radius:16px; padding:24px 22px; transition:border-color .2s ease, transform .2s ease; }
 .course-card:hover{ border-color:var(--violet); transform:translateY(-2px); }
 .course-card .n{ font-family:'Unbounded',sans-serif; font-weight:700; font-size:1.05rem; }
@@ -420,7 +413,6 @@ nav.top.scrolled{ background:rgba(10,10,13,0.92); -webkit-backdrop-filter:blur(1
       <h2>Un cours pour chaque danse</h2>
     </div>
     <div class="courses-scroll-wrap reveal" style="transition-delay:.1s">
-      <button class="courses-arrow courses-arrow-l" id="coursesPrev" aria-label="Cours précédents">&#8249;</button>
       <div class="courses-scroll" id="coursesScroll">
         <div class="course-card"><span class="n">Modern'Jazz</span><span class="t">Tous niveaux</span></div>
         <div class="course-card"><span class="n">Classique</span><span class="t">Tous niveaux</span></div>
@@ -431,7 +423,9 @@ nav.top.scrolled{ background:rgba(10,10,13,0.92); -webkit-backdrop-filter:blur(1
         <div class="course-card"><span class="n">Ateliers chorégraphiques</span><span class="t">Sur projet</span></div>
         <div class="course-card"><span class="n">Prépa concours &amp; auditions</span><span class="t">Niveau avancé</span></div>
       </div>
-      <button class="courses-arrow courses-arrow-r" id="coursesNext" aria-label="Cours suivants">&#8250;</button>
+      <div class="courses-scrollbar" id="coursesScrollbar">
+        <div class="courses-scrollbar-thumb" id="coursesThumb"></div>
+      </div>
     </div>
   </div>
 </section>
@@ -556,11 +550,67 @@ nav.top.scrolled{ background:rgba(10,10,13,0.92); -webkit-backdrop-filter:blur(1
   // fleches du strip de cours (desktop -- pas de scrollbar visible ni
   // de swipe tactile pour signaler que ca defile, donc indispensables)
   var coursesScroll = document.getElementById('coursesScroll');
-  var coursesPrev = document.getElementById('coursesPrev');
-  var coursesNext = document.getElementById('coursesNext');
-  if(coursesScroll && coursesPrev && coursesNext){
-    coursesPrev.addEventListener('click', function(){ coursesScroll.scrollBy({ left:-240, behavior:'smooth' }); });
-    coursesNext.addEventListener('click', function(){ coursesScroll.scrollBy({ left:240, behavior:'smooth' }); });
+  var coursesScrollbar = document.getElementById('coursesScrollbar');
+  var coursesThumb = document.getElementById('coursesThumb');
+  if(coursesScroll && coursesScrollbar && coursesThumb){
+    function updateCoursesThumb(){
+      var trackW = coursesScrollbar.clientWidth;
+      var contentW = coursesScroll.scrollWidth;
+      var visibleW = coursesScroll.clientWidth;
+      if(contentW <= visibleW + 1){
+        coursesScrollbar.style.display = 'none';
+        return;
+      }
+      coursesScrollbar.style.display = '';
+      var thumbW = Math.max(trackW * (visibleW / contentW), 24);
+      coursesThumb.style.width = thumbW + 'px';
+      var maxScroll = contentW - visibleW;
+      var maxThumbLeft = trackW - thumbW;
+      var ratio = maxScroll > 0 ? coursesScroll.scrollLeft / maxScroll : 0;
+      coursesThumb.style.left = (maxThumbLeft * ratio) + 'px';
+    }
+    coursesScroll.addEventListener('scroll', updateCoursesThumb, { passive:true });
+    window.addEventListener('resize', updateCoursesThumb);
+    updateCoursesThumb();
+
+    var dragging = false, dragStartX = 0, dragStartScroll = 0;
+    coursesThumb.addEventListener('pointerdown', function(e){
+      dragging = true;
+      dragStartX = e.clientX;
+      dragStartScroll = coursesScroll.scrollLeft;
+      coursesThumb.setPointerCapture(e.pointerId);
+    });
+    coursesThumb.addEventListener('pointermove', function(e){
+      if(!dragging) return;
+      var trackW = coursesScrollbar.clientWidth;
+      var thumbW = coursesThumb.offsetWidth;
+      var maxThumbLeft = trackW - thumbW;
+      var contentW = coursesScroll.scrollWidth;
+      var visibleW = coursesScroll.clientWidth;
+      var maxScroll = contentW - visibleW;
+      var deltaX = e.clientX - dragStartX;
+      var deltaScroll = maxThumbLeft > 0 ? (deltaX / maxThumbLeft) * maxScroll : 0;
+      coursesScroll.scrollLeft = dragStartScroll + deltaScroll;
+    });
+    function stopCoursesDrag(){ dragging = false; }
+    coursesThumb.addEventListener('pointerup', stopCoursesDrag);
+    coursesThumb.addEventListener('pointercancel', stopCoursesDrag);
+
+    // clic direct sur la piste (hors du curseur) -> saute a cette position
+    coursesScrollbar.addEventListener('pointerdown', function(e){
+      if(e.target === coursesThumb) return;
+      var rect = coursesScrollbar.getBoundingClientRect();
+      var clickX = e.clientX - rect.left;
+      var trackW = rect.width;
+      var thumbW = coursesThumb.offsetWidth;
+      var maxThumbLeft = trackW - thumbW;
+      var targetThumbLeft = Math.min(Math.max(clickX - thumbW / 2, 0), maxThumbLeft);
+      var contentW = coursesScroll.scrollWidth;
+      var visibleW = coursesScroll.clientWidth;
+      var maxScroll = contentW - visibleW;
+      var targetScroll = maxThumbLeft > 0 ? (targetThumbLeft / maxThumbLeft) * maxScroll : 0;
+      coursesScroll.scrollTo({ left: targetScroll, behavior:'smooth' });
+    });
   }
 
   // lightbox galerie : clic sur une photo/video -> affichage en grand
