@@ -314,6 +314,22 @@ footer.site .wrap{ display:flex; justify-content:space-between; align-items:cent
 footer.site a{ color: var(--ivoire-dim); text-decoration:none; }
 footer.site a:hover{ color: var(--ivoire); }
 
+/* ===== FILIGRANE DE DEMO -- A RETIRER des que le site devient officiel =====
+   Meme principe que Le Duo : dissuade la copie/capture d'ecran pendant le
+   demarchage. position:absolute (pas fixed) pour defiler avec la page --
+   plus discret qu'un filigrane colle en permanence a l'ecran. La hauteur
+   est posee en JS (--doc-height) pour couvrir toute la longueur reelle de
+   la page, pas juste le premier ecran. */
+.demo-watermark{
+  position:absolute; top:0; left:0; right:0;
+  height:calc(var(--doc-height, 100%));
+  z-index:500;
+  pointer-events:none;
+  background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMjAiIGhlaWdodD0iMTQwIj4KICA8dGV4dCB4PSIwIiB5PSI5MiIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDExMCA3MCkiIGZvbnQtZmFtaWx5PSJKb3N0LCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyMiIgZm9udC13ZWlnaHQ9IjYwMCIgbGV0dGVyLXNwYWNpbmc9IjQiIGZpbGw9IiM3YTdhN2EiIGZpbGwtb3BhY2l0eT0iMC4xNiI+U0tFTFZPPC90ZXh0Pgo8L3N2Zz4=");
+  background-repeat:repeat;
+}
+/* ===== FIN FILIGRANE DE DEMO ===== */
+
 :focus-visible{ outline: 2px solid var(--terracotta); outline-offset:2px; }
 
 /* ---------- REVEAL ON SCROLL ----------
@@ -394,6 +410,10 @@ footer.site a:hover{ color: var(--ivoire); }
     </svg>
   </div>
 </div>
+
+<!-- Filigrane de démo (voir .demo-watermark dans le <style>) : à retirer
+     dès que le site devient officiel. -->
+<div class="demo-watermark" aria-hidden="true"></div>
 
 <nav class="top" id="nav">
   <a href="#accueil" class="brand">
@@ -578,6 +598,22 @@ footer.site a:hover{ color: var(--ivoire); }
 <script>
 (function(){
   'use strict';
+
+  // Filigrane de démo (voir .demo-watermark en CSS) : posé en position
+  // absolute pour défiler avec la page, il a besoin d'une hauteur
+  // explicite couvrant toute la longueur réelle — sans ça il ne
+  // couvrirait que le premier écran.
+  function updateDocHeight(){
+    document.documentElement.style.setProperty('--doc-height', document.documentElement.scrollHeight + 'px');
+  }
+  updateDocHeight();
+  window.addEventListener('load', updateDocHeight);
+  var docHeightTimer = null;
+  window.addEventListener('resize', function(){
+    clearTimeout(docHeightTimer);
+    docHeightTimer = setTimeout(updateDocHeight, 200);
+  });
+
   var preloader = document.getElementById('preloader');
   if (preloader) {
     // animationend bubbles up from the mark/line's own entrance animations
