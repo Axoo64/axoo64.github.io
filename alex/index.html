@@ -94,20 +94,27 @@ section{ padding:96px 0; }
 noscript .reveal, html.no-js .reveal{ opacity:1; transform:none; }
 
 /* ---------- preloader ---------- */
-/* Concept : juste le logo qui encaisse, en un seul mouvement fluide --
-   pas d'element separe (gant, flash). Le petit "chargement" recule
-   legerement puis la meme courbe l'emporte hors du cadre, comme si le
-   coup encaisse etait aussi ce qui degageait l'ecran. */
+/* Concept : une combo. Le logo encaisse un coup de droite (pousse a
+   gauche, revient), puis un coup de gauche (pousse a droite, revient) --
+   fond fixe pendant ce temps, seul le logo bouge. Puis un dernier coup
+   l'envoie vers le haut et cette fois tout l'ecran de chargement part
+   avec lui, decouvrant le site. Tout en translations douces, sans
+   rotation ni rebond sec. */
 .preloader{ position:fixed; inset:0; z-index:9999; background:var(--ink); display:flex; align-items:center; justify-content:center; overflow:hidden; }
-.preloader.leave{ animation:preloaderKnockout .75s cubic-bezier(.5,0,.35,1) .55s forwards; }
-@keyframes preloaderKnockout{
-  0%{ transform:translateX(0) rotate(0); }
-  22%{ transform:translateX(-14px) rotate(-2deg); }
-  100%{ transform:translateX(130%) rotate(7deg); }
-}
+.preloader.leave{ animation:preloaderExit .55s cubic-bezier(.45,0,.15,1) .7s forwards; }
+@keyframes preloaderExit{ to{ transform:translateY(-130%); } }
 
 .preloader-mark{ position:relative; z-index:2; opacity:0; transform:scale(0.86); animation:markIn .6s cubic-bezier(.2,.8,.2,1) .1s forwards; }
+.preloader.leave .preloader-mark{ animation:markIn .6s cubic-bezier(.2,.8,.2,1) .1s forwards, markCombo .7s ease-in-out forwards; }
 @keyframes markIn{ to{ opacity:1; transform:scale(1); } }
+@keyframes markCombo{
+  0%{ transform:translateX(0); }
+  15%{ transform:translateX(-16px); }
+  35%{ transform:translateX(0); }
+  55%{ transform:translateX(16px); }
+  75%{ transform:translateX(0); }
+  100%{ transform:translateX(0); }
+}
 .preloader-mark img{ width:76px; height:76px; border-radius:50%; }
 @media (prefers-reduced-motion: reduce){
   .preloader, .preloader-mark{ animation:none !important; }
