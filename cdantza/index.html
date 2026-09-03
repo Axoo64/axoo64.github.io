@@ -102,7 +102,11 @@ nav.top.scrolled{ background:rgba(10,10,13,0.92); -webkit-backdrop-filter:blur(1
 .nav-links{ display:flex; align-items:center; gap:28px; }
 .nav-link{ font-size:0.92rem; font-weight:600; opacity:0.85; }
 .nav-link:hover{ opacity:1; }
-.nav-cta{ padding:10px 20px; background:var(--violet); color:var(--white); border-radius:100px; font-weight:600; font-size:0.9rem; }
+/* display:inline-flex explicite -- sans ca .nav-cta (un <a>, inline par
+   defaut) reste inline dans .mobile-panel (pas un conteneur flex comme
+   .nav-links), et le padding vertical n'agrandit pas la ligne : le bouton
+   parait ecrase/trop petit pour son texte. */
+.nav-cta{ display:inline-flex; align-items:center; justify-content:center; padding:10px 20px; background:var(--violet); color:var(--white); border-radius:100px; font-weight:600; font-size:0.9rem; white-space:nowrap; }
 .nav-toggle{ display:none; flex-direction:column; gap:5px; width:26px; background:none; border:0; cursor:pointer; padding:6px; }
 .nav-toggle span{ display:block; height:2px; background:var(--white); border-radius:2px; transition:transform .3s ease, opacity .3s ease; }
 .nav-toggle.open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
@@ -111,7 +115,11 @@ nav.top.scrolled{ background:rgba(10,10,13,0.92); -webkit-backdrop-filter:blur(1
 .mobile-panel{ position:fixed; top:0; left:0; right:0; z-index:49; max-height:0; overflow:hidden; background:rgba(10,10,13,0.98); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); padding:0 20px; transition:max-height .38s cubic-bezier(.4,0,.2,1), padding .38s cubic-bezier(.4,0,.2,1); }
 .mobile-panel.open{ max-height:460px; padding:88px 20px 28px; }
 .mobile-panel a{ display:block; padding:13px 0; font-weight:600; border-bottom:1px solid var(--line); }
-.mobile-panel .nav-cta{ display:inline-block; margin-top:16px; }
+/* .mobile-panel a plus bas ecrase display/padding/border-bottom pour
+   TOUS les liens du panneau -- on les redefinit ici explicitement pour
+   que le bouton pilule ne se retrouve pas avec un padding horizontal
+   nul (c'etait le bug : bouton ecrase, texte colle aux bords). */
+.mobile-panel .nav-cta{ display:inline-flex; align-items:center; justify-content:center; margin-top:16px; padding:10px 20px; border-bottom:none; }
 @media (max-width:860px){ .nav-links{ display:none; } .nav-toggle{ display:flex; } }
 
 /* ---------- hero ---------- */
@@ -119,8 +127,13 @@ nav.top.scrolled{ background:rgba(10,10,13,0.92); -webkit-backdrop-filter:blur(1
 .hero-video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 30%; z-index:0; }
 .hero-overlay{ position:absolute; inset:0; z-index:1; background:linear-gradient(0deg, rgba(10,10,13,0.97) 4%, rgba(10,10,13,0.5) 55%, rgba(61,18,89,0.35) 100%); }
 .hero-inner{ position:relative; z-index:2; padding-top:170px; padding-bottom:80px; }
-.hero h1{ font-size:clamp(2.6rem,7vw,4.6rem); line-height:0.98; max-width:14ch; }
+.hero h1{ font-size:clamp(2.6rem,7vw,4.6rem); line-height:1.08; max-width:14ch; }
 .hero h1 em{ font-style:normal; color:var(--violet-soft); }
+/* vague continue lettre par lettre -- chaque span a son propre delai
+   (voir le style inline sur chaque lettre), la meme keyframe suffit */
+.lw{ display:inline-block; animation:letterWave 2.6s ease-in-out infinite; }
+@keyframes letterWave{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-10px); } }
+@media (prefers-reduced-motion: reduce){ .lw{ animation:none; } }
 .hero-lede{ margin-top:var(--gap-lede); max-width:50ch; color:var(--white-dim); font-size:1.06rem; }
 .hero-actions{ margin-top:var(--gap-actions); display:flex; flex-wrap:wrap; gap:14px; }
 .hero-rating{ margin-top:24px; display:flex; align-items:center; gap:10px; font-size:0.92rem; color:var(--white-dim); }
@@ -220,7 +233,10 @@ nav.top.scrolled{ background:rgba(10,10,13,0.92); -webkit-backdrop-filter:blur(1
   <div class="hero-overlay"></div>
   <div class="wrap hero-inner">
     <p class="eyebrow">École de danse · Anglet</p>
-    <h1>Ta danse.<br>Ton <em>rythme</em>.</h1>
+    <h1 class="wave-title" aria-label="Ta danse. Ton rythme.">
+      <span class="lw" style="animation-delay:.00s">T</span><span class="lw" style="animation-delay:.04s">a</span> <span class="lw" style="animation-delay:.12s">d</span><span class="lw" style="animation-delay:.16s">a</span><span class="lw" style="animation-delay:.20s">n</span><span class="lw" style="animation-delay:.24s">s</span><span class="lw" style="animation-delay:.28s">e</span><span class="lw" style="animation-delay:.32s">.</span><br>
+      <span class="lw" style="animation-delay:.40s">T</span><span class="lw" style="animation-delay:.44s">o</span><span class="lw" style="animation-delay:.48s">n</span> <em><span class="lw" style="animation-delay:.56s">r</span><span class="lw" style="animation-delay:.60s">y</span><span class="lw" style="animation-delay:.64s">t</span><span class="lw" style="animation-delay:.68s">h</span><span class="lw" style="animation-delay:.72s">m</span><span class="lw" style="animation-delay:.76s">e</span></em><span class="lw" style="animation-delay:.80s">.</span>
+    </h1>
     <p class="hero-lede">Modern'jazz, contemporain, heels, street jazz, classique... 2 studios à Anglet, des cours pour tous les âges et tous les niveaux, dès 4 ans.</p>
     <div class="hero-actions">
       <a href="https://wa.me/33664942609" class="btn btn-primary">S'inscrire</a>
