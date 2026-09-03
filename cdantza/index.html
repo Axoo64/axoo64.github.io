@@ -275,7 +275,10 @@ nav.top.scrolled{ background:rgba(10,10,13,0.92); -webkit-backdrop-filter:blur(1
    (regle CSS : un seul axe a "visible" bascule l'autre sur "auto"), et
    le survol d'une carte (translateY(-2px)) la faisait depasser tout en
    haut de la boite, coupant le contour de survol. */
-.courses-scroll{ display:flex; gap:14px; overflow-x:auto; scroll-snap-type:x proximity; padding-top:6px; padding-bottom:8px; margin:0 -32px; padding-left:32px; padding-right:32px; scrollbar-width:none; }
+/* pas de scroll-snap : avec la barre glissable qui pousse scrollLeft en
+   continu, le snap forçait un saut carte-par-carte a chaque micro-pas
+   du glisser -- rendu hyper saccade au lieu d'un scroll libre. */
+.courses-scroll{ display:flex; gap:14px; overflow-x:auto; padding-top:6px; padding-bottom:8px; margin:0 -32px; padding-left:32px; padding-right:32px; scrollbar-width:none; }
 .courses-scroll::-webkit-scrollbar{ display:none; }
 @media (max-width:640px){ .courses-scroll{ margin:0 -22px; padding-left:22px; padding-right:22px; } }
 /* barre de defilement personnalisee : plus discrete que des fleches
@@ -283,9 +286,14 @@ nav.top.scrolled{ background:rgba(10,10,13,0.92); -webkit-backdrop-filter:blur(1
    doigt. Cachee automatiquement si tout tient dans la largeur (voir
    updateCoursesThumb en JS, qui masque coursesScrollbar dans ce cas). */
 .courses-scrollbar{ position:relative; height:5px; border-radius:100px; background:rgba(245,243,248,0.12); margin-top:20px; cursor:pointer; }
+.courses-scrollbar::before{ content:""; position:absolute; top:-8px; bottom:-8px; left:0; right:0; }
 .courses-scrollbar-thumb{ position:absolute; top:0; left:0; height:100%; border-radius:100px; background:var(--violet); cursor:grab; touch-action:none; }
 .courses-scrollbar-thumb:active{ cursor:grabbing; }
-.course-card{ scroll-snap-align:start; flex:0 0 auto; min-width:200px; background:var(--ink-elev); border:1px solid var(--line); border-radius:16px; padding:24px 22px; transition:border-color .2s ease, transform .2s ease; }
+/* zone cliquable etendue (invisible) -- une barre de 5px de haut est
+   quasi impossible a choper au curseur ; ce pseudo-element agrandit la
+   cible reelle sans epaissir le trait visible. */
+.courses-scrollbar-thumb::before{ content:""; position:absolute; top:-9px; bottom:-9px; left:0; right:0; }
+.course-card{ flex:0 0 auto; min-width:200px; background:var(--ink-elev); border:1px solid var(--line); border-radius:16px; padding:24px 22px; transition:border-color .2s ease, transform .2s ease; }
 .course-card:hover{ border-color:var(--violet); transform:translateY(-2px); }
 .course-card .n{ font-family:'Unbounded',sans-serif; font-weight:700; font-size:1.05rem; }
 .course-card .t{ display:block; margin-top:8px; font-size:0.8rem; color:var(--white-dim); }
