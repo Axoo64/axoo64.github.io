@@ -203,10 +203,10 @@ nav.top.scrolled{ background:rgba(10,10,13,0.92); -webkit-backdrop-filter:blur(1
   padding:88px 20px 34px;
   background:var(--curtain-fold);
   box-shadow:0 18px 40px rgba(0,0,0,0.5);
-  /* -100% ne suffit pas : la frange en ::after depasse de 14px sous le
+  /* -100% ne suffit pas : la frange en ::after depasse de 20px sous le
      panneau, donc -100% seul laissait un mini bout de frange visible
      en haut de l'ecran meme menu ferme. */
-  transform:translateY(calc(-100% - 14px));
+  transform:translateY(calc(-100% - 20px));
   transition:transform .45s cubic-bezier(.4,0,.2,1); /* fermeture : simple et rapide */
 }
 .mobile-panel.open{
@@ -220,10 +220,15 @@ nav.top.scrolled{ background:rgba(10,10,13,0.92); -webkit-backdrop-filter:blur(1
   content:""; position:absolute; left:0; right:0; top:-80px; height:80px;
   background:var(--curtain-fold);
 }
+/* Bosses PLEINES qui se chevauchent largement (rayon 16px pour un pas
+   de 22px, donc bien plus que la moitie) -- l'ancienne version avait le
+   centre du cercle transparent et le bord plein, ce qui perçait de
+   vrais trous en dentelle. Ici le cercle entier est plein et le
+   chevauchement garantit zero espace transparent le long de la couture. */
 .mobile-panel::after{
-  content:""; position:absolute; left:0; right:0; bottom:-13px; height:14px;
-  background-image:radial-gradient(circle at 10px 0, transparent 9px, var(--violet-deep) 9.5px);
-  background-size:20px 14px; background-repeat:repeat-x;
+  content:""; position:absolute; left:0; right:0; bottom:-16px; height:20px;
+  background-image:radial-gradient(circle 16px at 11px 0px, var(--violet-deep) 15.5px, transparent 16px);
+  background-size:22px 20px; background-repeat:repeat-x;
   filter:drop-shadow(0 3px 3px rgba(0,0,0,0.35));
 }
 .mobile-panel a{ display:block; padding:13px 0; font-weight:600; border-bottom:1px solid rgba(245,243,248,0.16); opacity:0; transform:translateY(-8px); transition:opacity .2s ease; }
