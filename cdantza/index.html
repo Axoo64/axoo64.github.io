@@ -77,40 +77,58 @@ section{ padding:96px 0; }
 noscript .reveal, html.no-js .reveal{ opacity:1; transform:none; }
 
 /* ---------- preloader ---------- */
-/* Scene plongee dans le noir : le logo est a peine visible, puis deux
-   projecteurs s'allument (avec un leger scintillement d'allumage) et
-   l'eclairent en plein, comme avant une entree sur scene. Puis tout
-   l'ecran se soulève et decouvre le site. */
+/* Noir total au depart -- rien n'est visible. Puis deux projecteurs
+   s'allument, pointes vers l'exterieur (comme s'ils cherchaient), et
+   pivotent (vraie rotation, pas juste un fondu) pour converger vers le
+   centre -- avec un leger depassement + retour, comme un vrai mouvement
+   mecanique qui a de l'inertie. Le logo ne devient visible qu'une fois
+   les faisceaux arrives, "revele" par la lumiere plutot que par son
+   propre fondu independant. Puis tout l'ecran se soulève. */
 .preloader{ position:fixed; inset:0; z-index:9999; background:var(--ink); display:flex; align-items:center; justify-content:center; overflow:hidden; }
 .preloader.leave{ animation:preloaderLift .62s cubic-bezier(.5,0,.15,1) forwards; }
 @keyframes preloaderLift{ to{ transform:translateY(-100%); } }
 
+/* faisceau volontairement etroit (140px) -- un cone large a la meme
+   echelle que l'ecran rendait la rotation quasi invisible (le flare du
+   cone dominait le rendu quelle que soit l'angle). Etroit, le pivot se
+   voit clairement balayer d'un bord vers le centre. */
 .spotlight{
-  position:absolute; top:-15%; width:280px; height:140%;
-  background:linear-gradient(180deg, rgba(230,215,255,0.5) 0%, rgba(230,215,255,0.12) 55%, rgba(230,215,255,0) 85%);
-  clip-path:polygon(48% 0%, 52% 0%, 100% 100%, 0% 100%);
+  position:absolute; top:-15%; width:140px; height:140%;
+  background:linear-gradient(180deg, rgba(230,215,255,0.6) 0%, rgba(230,215,255,0.16) 55%, rgba(230,215,255,0) 85%);
+  clip-path:polygon(46% 0%, 54% 0%, 100% 100%, 0% 100%);
   mix-blend-mode:screen;
   opacity:0;
   transform-origin:top center;
-  animation:spotOn .7s ease-out .25s forwards;
 }
-.spotlight-l{ left:14%; transform:rotate(20deg) scaleY(0.85); }
-.spotlight-r{ right:14%; transform:rotate(-20deg) scaleY(0.85); animation-delay:.35s; }
-@keyframes spotOn{
-  0%{ opacity:0; }
-  8%{ opacity:.85; }
-  16%{ opacity:.15; }
-  26%{ opacity:.7; }
-  100%{ opacity:.55; }
+.spotlight-l{ left:22%; animation:sweepL 1.05s cubic-bezier(.2,.6,.25,1) .15s forwards; }
+.spotlight-r{ right:22%; animation:sweepR 1.05s cubic-bezier(.2,.6,.25,1) .25s forwards; }
+/* le faisceau part grand ouvert (angle large, comme s'il cherchait),
+   puis pivote vers le centre en depassant legerement sa cible avant de
+   revenir se stabiliser -- l'inertie d'un vrai projecteur qu'on oriente. */
+@keyframes sweepL{
+  0%{ opacity:0; transform:rotate(64deg); }
+  14%{ opacity:.9; transform:rotate(64deg); }
+  72%{ opacity:.8; transform:rotate(9deg); }
+  88%{ opacity:.6; transform:rotate(21deg); }
+  100%{ opacity:.55; transform:rotate(16deg); }
+}
+@keyframes sweepR{
+  0%{ opacity:0; transform:rotate(-64deg); }
+  14%{ opacity:.9; transform:rotate(-64deg); }
+  72%{ opacity:.8; transform:rotate(-9deg); }
+  88%{ opacity:.6; transform:rotate(-21deg); }
+  100%{ opacity:.55; transform:rotate(-16deg); }
 }
 .spot-glow{
   position:absolute; top:50%; left:50%; width:260px; height:260px; margin:-130px 0 0 -130px;
-  background:radial-gradient(circle, rgba(230,215,255,0.35) 0%, rgba(230,215,255,0) 70%);
-  opacity:0; animation:glowOn .7s ease-out .3s forwards;
+  background:radial-gradient(circle, rgba(230,215,255,0.4) 0%, rgba(230,215,255,0) 70%);
+  opacity:0; animation:glowOn .4s ease-out 1.05s forwards;
 }
 @keyframes glowOn{ 0%{ opacity:0; } 100%{ opacity:1; } }
 
-.preloader-mark{ position:relative; z-index:2; opacity:.16; transform:scale(0.92); animation:markLit .8s ease-out .35s forwards; }
+/* le logo reste invisible jusqu'a ce que les faisceaux soient arrives
+   (delai cale sur la fin du sweep ci-dessus), puis apparait "eclaire". */
+.preloader-mark{ position:relative; z-index:2; opacity:0; transform:scale(0.9); animation:markLit .4s ease-out 1.1s forwards; }
 /* au moment ou .leave est ajoutee, l'entree est deja terminee (voir le
    delai du JS plus bas) -- on ne relance pas markLit, juste la sortie,
    qui part implicitement de l'etat actuel (opacite 1, echelle 1). */
@@ -144,31 +162,47 @@ nav.top.scrolled{ background:rgba(10,10,13,0.92); -webkit-backdrop-filter:blur(1
 .nav-toggle.open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
 .nav-toggle.open span:nth-child(2){ opacity:0; }
 .nav-toggle.open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
-/* Le menu mobile est un rideau de scene qui tombe depuis le haut --
-   clip-path plutot que max-height : ca revele le contenu de haut en bas
-   sans etirer le texte (une transform:scaleY aurait deforme les liens).
-   Le fond imite des plis de tissu (bandes clair/fonce en degrade repete)
-   et une frange doree marque l'ourlet du bas. Les liens apparaissent
-   juste apres que le rideau ait fini de tomber (delais en cascade). */
+/* Le menu mobile est un vrai rideau de scene qui tombe depuis la
+   coulisse (transform, pas clip-path -- ca permet un leger rebond
+   physique en fin de course, comme un tissu lourd qui a de l'inertie
+   et se stabilise apres etre tombe, plutot qu'un arret sec). Les plis
+   sont un degrade repete avec plusieurs arrets doux (pas des bandes
+   franches) pour un effet arrondi/cylindrique comme du velours, dans
+   les tons violet du site. Une frange en zigzag marque l'ourlet bas. */
 .mobile-panel{
   position:fixed; top:0; left:0; right:0; z-index:49;
-  padding:88px 20px 28px;
+  padding:88px 20px 34px;
   background:
-    repeating-linear-gradient(100deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 3px, rgba(0,0,0,0.16) 3px, rgba(0,0,0,0.16) 26px, rgba(255,255,255,0.03) 26px, rgba(255,255,255,0.03) 29px, transparent 29px, transparent 52px),
-    linear-gradient(180deg, var(--violet-deep) 0%, #1B0A29 70%, var(--ink) 100%);
-  border-bottom:3px solid var(--violet);
-  box-shadow:0 18px 40px rgba(0,0,0,0.45);
-  clip-path:inset(0 0 100% 0);
-  transition:clip-path .5s cubic-bezier(.5,0,.15,1);
+    repeating-linear-gradient(90deg,
+      rgba(10,3,18,0.55) 0px,
+      rgba(10,3,18,0.15) 6px,
+      rgba(194,147,242,0.22) 16px,
+      rgba(10,3,18,0.15) 26px,
+      rgba(10,3,18,0.55) 34px),
+    linear-gradient(180deg, var(--violet-deep) 0%, #1B0A29 72%, var(--ink) 100%);
+  box-shadow:0 18px 40px rgba(0,0,0,0.5);
+  /* -100% ne suffit pas : la frange en ::after depasse de 12px sous le
+     panneau (bottom:-11px + hauteur 11px), donc -100% seul laissait un
+     mini bout de frange visible en haut de l'ecran meme menu ferme. */
+  transform:translateY(calc(-100% - 12px));
+  transition:transform .85s cubic-bezier(.34,1.42,.64,1);
 }
-.mobile-panel.open{ clip-path:inset(0 0 0% 0); }
-.mobile-panel a{ display:block; padding:13px 0; font-weight:600; border-bottom:1px solid rgba(245,243,248,0.16); opacity:0; transform:translateY(-8px); transition:opacity .35s ease, transform .35s ease; }
+.mobile-panel.open{ transform:translateY(0); }
+.mobile-panel::after{
+  content:""; position:absolute; left:0; right:0; bottom:-11px; height:11px;
+  background:
+    linear-gradient(135deg, var(--violet) 50%, transparent 50%),
+    linear-gradient(-135deg, var(--violet) 50%, transparent 50%);
+  background-size:18px 11px; background-repeat:repeat-x;
+  opacity:.9;
+}
+.mobile-panel a{ display:block; padding:13px 0; font-weight:600; border-bottom:1px solid rgba(245,243,248,0.16); opacity:0; transform:translateY(-8px); transition:opacity .3s ease, transform .3s ease; }
 .mobile-panel.open a{ opacity:1; transform:none; }
-.mobile-panel a:nth-child(1){ transition-delay:.28s; }
-.mobile-panel a:nth-child(2){ transition-delay:.33s; }
-.mobile-panel a:nth-child(3){ transition-delay:.38s; }
-.mobile-panel a:nth-child(4){ transition-delay:.43s; }
-.mobile-panel a:nth-child(5){ transition-delay:.48s; }
+.mobile-panel a:nth-child(1){ transition-delay:.5s; }
+.mobile-panel a:nth-child(2){ transition-delay:.56s; }
+.mobile-panel a:nth-child(3){ transition-delay:.62s; }
+.mobile-panel a:nth-child(4){ transition-delay:.68s; }
+.mobile-panel a:nth-child(5){ transition-delay:.74s; }
 @media (prefers-reduced-motion: reduce){
   .mobile-panel, .mobile-panel a{ transition:none; }
   .mobile-panel a{ opacity:1; transform:none; }
@@ -404,7 +438,7 @@ nav.top.scrolled{ background:rgba(10,10,13,0.92); -webkit-backdrop-filter:blur(1
     preloader.addEventListener('animationend', function(e){ if(e.target === preloader){ preloader.remove(); } });
     setTimeout(function(){ if(preloader && preloader.parentNode){ preloader.remove(); } }, 1500);
   }
-  setTimeout(leavePreloader, 1300);
+  setTimeout(leavePreloader, 1750);
 
   var nav = document.getElementById('nav');
   function onScroll(){ if(window.scrollY > 40){ nav.classList.add('scrolled'); } else { nav.classList.remove('scrolled'); } }
