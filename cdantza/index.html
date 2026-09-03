@@ -270,9 +270,28 @@ nav.top.scrolled{ background:rgba(10,10,13,0.92); -webkit-backdrop-filter:blur(1
 /* ---------- courses horizontal scroll ---------- */
 .courses{ padding-top:72px; padding-bottom:72px; border-bottom:1px solid var(--line); }
 .courses .sec-head{ margin-bottom:32px; }
-.courses-scroll{ display:flex; gap:14px; overflow-x:auto; scroll-snap-type:x proximity; padding-bottom:8px; margin:0 -32px; padding-left:32px; padding-right:32px; scrollbar-width:none; }
+.courses-scroll-wrap{ position:relative; }
+/* padding-top -- sans ca overflow-x:auto rend aussi overflow-y "auto"
+   (regle CSS : un seul axe a "visible" bascule l'autre sur "auto"), et
+   le survol d'une carte (translateY(-2px)) la faisait depasser tout en
+   haut de la boite, coupant le contour de survol. */
+.courses-scroll{ display:flex; gap:14px; overflow-x:auto; scroll-snap-type:x proximity; padding-top:6px; padding-bottom:8px; margin:0 -32px; padding-left:32px; padding-right:32px; scrollbar-width:none; }
 .courses-scroll::-webkit-scrollbar{ display:none; }
 @media (max-width:640px){ .courses-scroll{ margin:0 -22px; padding-left:22px; padding-right:22px; } }
+/* fleches : indispensables sur desktop ou rien ne signale que la ligne
+   defile (pas de barre de scroll, pas de swipe tactile). */
+.courses-arrow{
+  position:absolute; top:50%; transform:translateY(-50%); z-index:5;
+  width:42px; height:42px; border-radius:50%;
+  background:var(--ink-elev); border:1px solid var(--line); color:var(--white);
+  font-size:1.5rem; line-height:1; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .2s ease, border-color .2s ease, transform .2s ease;
+}
+.courses-arrow:hover{ border-color:var(--violet); background:var(--violet-deep); }
+.courses-arrow-l{ left:-8px; }
+.courses-arrow-r{ right:-8px; }
+@media (max-width:780px){ .courses-arrow{ display:none; } } /* swipe tactile natif sur mobile/tablette */
 .course-card{ scroll-snap-align:start; flex:0 0 auto; min-width:200px; background:var(--ink-elev); border:1px solid var(--line); border-radius:16px; padding:24px 22px; transition:border-color .2s ease, transform .2s ease; }
 .course-card:hover{ border-color:var(--violet); transform:translateY(-2px); }
 .course-card .n{ font-family:'Unbounded',sans-serif; font-weight:700; font-size:1.05rem; }
@@ -281,8 +300,17 @@ nav.top.scrolled{ background:rgba(10,10,13,0.92); -webkit-backdrop-filter:blur(1
 /* ---------- gallery masonry ---------- */
 .gallery{ background:var(--ink-soft); }
 .gallery-grid{ display:grid; grid-template-columns:repeat(4,1fr); grid-auto-rows:130px; grid-auto-flow:dense; gap:14px; }
-.gallery-item{ position:relative; overflow:hidden; border-radius:14px; }
-.gallery-item img, .gallery-item video{ width:100%; height:100%; object-fit:cover; }
+.gallery-item{ position:relative; overflow:hidden; border-radius:14px; cursor:pointer; }
+.gallery-item img, .gallery-item video{ width:100%; height:100%; object-fit:cover; transition:transform .4s ease; }
+.gallery-item:hover img, .gallery-item:hover video{ transform:scale(1.06); }
+.gallery-item::after{
+  content:"⤢"; position:absolute; top:10px; right:10px; z-index:2;
+  width:30px; height:30px; border-radius:50%;
+  background:rgba(10,10,13,0.55); color:var(--white);
+  display:flex; align-items:center; justify-content:center; font-size:0.9rem;
+  opacity:0; transition:opacity .25s ease;
+}
+.gallery-item:hover::after{ opacity:1; }
 .gallery-item.span2{ grid-column:span 2; grid-row:span 2; }
 .gallery-item.span1{ grid-row:span 2; }
 @media (max-width:860px){
@@ -290,6 +318,15 @@ nav.top.scrolled{ background:rgba(10,10,13,0.92); -webkit-backdrop-filter:blur(1
   .gallery-item.span2{ grid-column:span 2; grid-row:span 2; }
   .gallery-item.span1{ grid-column:span 1; grid-row:span 2; }
 }
+
+/* ---------- lightbox (galerie en grand) ---------- */
+.lightbox{ position:fixed; inset:0; z-index:600; background:rgba(6,4,10,0.94); display:flex; align-items:center; justify-content:center; padding:40px; opacity:0; pointer-events:none; transition:opacity .25s ease; }
+.lightbox.open{ opacity:1; pointer-events:auto; }
+.lightbox-content{ max-width:min(90vw,900px); max-height:85vh; }
+.lightbox-content img, .lightbox-content video{ display:block; max-width:min(90vw,900px); max-height:85vh; border-radius:10px; box-shadow:0 20px 60px rgba(0,0,0,0.6); }
+.lightbox-close{ position:absolute; top:24px; right:24px; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:var(--white); font-size:1.6rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.lightbox-close:hover{ background:rgba(255,255,255,0.18); }
+@media (max-width:640px){ .lightbox{ padding:16px; } .lightbox-close{ top:14px; right:14px; width:38px; height:38px; } }
 
 /* ---------- avis marquee ---------- */
 .avis{ padding-top:80px; padding-bottom:80px; overflow:hidden; }
@@ -382,15 +419,19 @@ nav.top.scrolled{ background:rgba(10,10,13,0.92); -webkit-backdrop-filter:blur(1
       <p class="eyebrow">De 4 ans à adulte</p>
       <h2>Un cours pour chaque danse</h2>
     </div>
-    <div class="courses-scroll reveal" style="transition-delay:.1s">
-      <div class="course-card"><span class="n">Modern'Jazz</span><span class="t">Tous niveaux</span></div>
-      <div class="course-card"><span class="n">Classique</span><span class="t">Tous niveaux</span></div>
-      <div class="course-card"><span class="n">Contemporain</span><span class="t">Tous niveaux</span></div>
-      <div class="course-card"><span class="n">Street Jazz</span><span class="t">Ados / Adultes</span></div>
-      <div class="course-card"><span class="n">Heels / Cabaret</span><span class="t">Ados / Adultes</span></div>
-      <div class="course-card"><span class="n">Éveil</span><span class="t">Dès 4 ans</span></div>
-      <div class="course-card"><span class="n">Ateliers chorégraphiques</span><span class="t">Sur projet</span></div>
-      <div class="course-card"><span class="n">Prépa concours &amp; auditions</span><span class="t">Niveau avancé</span></div>
+    <div class="courses-scroll-wrap reveal" style="transition-delay:.1s">
+      <button class="courses-arrow courses-arrow-l" id="coursesPrev" aria-label="Cours précédents">&#8249;</button>
+      <div class="courses-scroll" id="coursesScroll">
+        <div class="course-card"><span class="n">Modern'Jazz</span><span class="t">Tous niveaux</span></div>
+        <div class="course-card"><span class="n">Classique</span><span class="t">Tous niveaux</span></div>
+        <div class="course-card"><span class="n">Contemporain</span><span class="t">Tous niveaux</span></div>
+        <div class="course-card"><span class="n">Street Jazz</span><span class="t">Ados / Adultes</span></div>
+        <div class="course-card"><span class="n">Heels / Cabaret</span><span class="t">Ados / Adultes</span></div>
+        <div class="course-card"><span class="n">Éveil</span><span class="t">Dès 4 ans</span></div>
+        <div class="course-card"><span class="n">Ateliers chorégraphiques</span><span class="t">Sur projet</span></div>
+        <div class="course-card"><span class="n">Prépa concours &amp; auditions</span><span class="t">Niveau avancé</span></div>
+      </div>
+      <button class="courses-arrow courses-arrow-r" id="coursesNext" aria-label="Cours suivants">&#8250;</button>
     </div>
   </div>
 </section>
@@ -457,6 +498,11 @@ nav.top.scrolled{ background:rgba(10,10,13,0.92); -webkit-backdrop-filter:blur(1
   </div>
 </footer>
 
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose" aria-label="Fermer">&times;</button>
+  <div class="lightbox-content" id="lightboxContent"></div>
+</div>
+
 <div class="demo-watermark" id="demoWatermark" aria-hidden="true" style="background-image:url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMjAiIGhlaWdodD0iMTQwIj4KICA8dGV4dCB4PSIwIiB5PSI5MiIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDExMCA3MCkiIGZvbnQtZmFtaWx5PSJKb3N0LCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyMiIgZm9udC13ZWlnaHQ9IjYwMCIgbGV0dGVyLXNwYWNpbmc9IjQiIGZpbGw9IiM3YTdhN2EiIGZpbGwtb3BhY2l0eT0iMC4xNiI+U0tFTFZPPC90ZXh0Pgo8L3N2Zz4=');"></div>
 
 <script>
@@ -506,6 +552,53 @@ nav.top.scrolled{ background:rgba(10,10,13,0.92); -webkit-backdrop-filter:blur(1
   if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){
     document.querySelectorAll('video').forEach(function(v){ v.pause(); });
   }
+
+  // fleches du strip de cours (desktop -- pas de scrollbar visible ni
+  // de swipe tactile pour signaler que ca defile, donc indispensables)
+  var coursesScroll = document.getElementById('coursesScroll');
+  var coursesPrev = document.getElementById('coursesPrev');
+  var coursesNext = document.getElementById('coursesNext');
+  if(coursesScroll && coursesPrev && coursesNext){
+    coursesPrev.addEventListener('click', function(){ coursesScroll.scrollBy({ left:-240, behavior:'smooth' }); });
+    coursesNext.addEventListener('click', function(){ coursesScroll.scrollBy({ left:240, behavior:'smooth' }); });
+  }
+
+  // lightbox galerie : clic sur une photo/video -> affichage en grand
+  var lightbox = document.getElementById('lightbox');
+  var lightboxContent = document.getElementById('lightboxContent');
+  var lightboxClose = document.getElementById('lightboxClose');
+  function openLightbox(media){
+    lightboxContent.innerHTML = '';
+    var clone;
+    if(media.tagName === 'VIDEO'){
+      clone = document.createElement('video');
+      clone.src = media.currentSrc || media.querySelector('source').src;
+      clone.controls = true;
+      clone.autoplay = true;
+      clone.loop = true;
+      clone.muted = true;
+      clone.playsInline = true;
+    } else {
+      clone = document.createElement('img');
+      clone.src = media.currentSrc || media.src;
+      clone.alt = media.alt || '';
+    }
+    lightboxContent.appendChild(clone);
+    lightbox.classList.add('open');
+  }
+  function closeLightbox(){
+    lightbox.classList.remove('open');
+    lightboxContent.innerHTML = '';
+  }
+  document.querySelectorAll('.gallery-item').forEach(function(item){
+    item.addEventListener('click', function(){
+      var media = item.querySelector('img, video');
+      if(media) openLightbox(media);
+    });
+  });
+  if(lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
+  if(lightbox) lightbox.addEventListener('click', function(e){ if(e.target === lightbox) closeLightbox(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeLightbox(); });
 })();
 </script>
 </body>
