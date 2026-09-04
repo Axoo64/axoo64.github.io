@@ -345,8 +345,22 @@
   .cart-item-remove{ background:none; border:none; color:var(--ink-soft); font-size:.78rem; text-decoration:underline; cursor:pointer; text-underline-offset:2px; }
   .cart-item-remove:hover{ color:var(--bloom); }
   .cart-footer{ padding:18px 22px 26px; border-top:1px solid var(--line); }
-  .cart-footer p{ font-size:.78rem; color:var(--ink-soft); line-height:1.55; margin-bottom:14px; }
+  .cart-footer > p{ font-size:.78rem; color:var(--ink-soft); line-height:1.55; margin-bottom:14px; }
   .cart-footer .btn{ width:100%; }
+  .cart-msg{
+    background:var(--cream-deep); border:1px solid var(--line); border-radius:14px;
+    padding:12px 14px; font-size:.84rem; color:var(--ink); line-height:1.5;
+    margin-bottom:14px; user-select:all; cursor:text;
+  }
+  .cart-msg:empty{ display:none; }
+  .cart-footer .btn:disabled{ opacity:.4; cursor:not-allowed; }
+  .cart-footer .btn:disabled:hover{ transform:none; }
+  .cart-copied{
+    text-align:center; font-size:.78rem; font-weight:600; color:var(--rose-deep);
+    margin:10px 0 0; opacity:0; transform:translateY(-4px);
+    transition:opacity .25s ease, transform .25s ease;
+  }
+  .cart-copied.show{ opacity:1; transform:translateY(0); }
 
   /* ============ ATELIER — zigzag editorial rows ============ */
   .atelier{ padding:var(--gap-loose) 0; background:var(--cream-deep); }
@@ -630,8 +644,10 @@
   </div>
   <div class="cart-list" id="cartList"></div>
   <div class="cart-footer">
-    <p>Eva Bloom étant une jeune marque, les commandes se font pour l'instant directement en message — indiquez les pièces de votre sélection à l'ouverture de la conversation.</p>
-    <a href="https://ig.me/m/eva.bloom.bijoux" target="_blank" rel="noopener" class="btn btn-solid">Commander par Instagram →</a>
+    <p>Eva Bloom étant une jeune marque, les commandes se font pour l'instant directement en message. Instagram ne permet pas de pré-remplir la conversation automatiquement — le message ci-dessous est généré pour vous et copié en un clic, il ne reste plus qu'à le coller.</p>
+    <p class="cart-msg" id="cartMsg"></p>
+    <button class="btn btn-solid" id="cartCheckout" type="button">Copier le message et ouvrir Instagram</button>
+    <p class="cart-copied" id="cartCopied">Message copié ✓ — collez-le dans la conversation qui vient de s'ouvrir.</p>
   </div>
 </div>
 
@@ -821,29 +837,48 @@
     cartBadge.classList.toggle('show', n > 0);
   }
   var cartList = document.getElementById('cartList');
+  var cartMsg = document.getElementById('cartMsg');
+  var cartCheckout = document.getElementById('cartCheckout');
+
+  // Builds the "Bonjour ! Je souhaiterais commander : 2 × Boucles Bloom et
+  // 1 × Trio de colliers. Merci !" message from the current cart contents —
+  // Instagram has no public deep-link parameter to pre-fill DM text (unlike
+  // WhatsApp's wa.me?text=), so this is shown to the visitor and copied to
+  // the clipboard on checkout rather than silently claiming to auto-send it.
+  function buildOrderText(){
+    if(!cart.length) return '';
+    var parts = cart.map(function(it){ return it.qty + ' × ' + it.title; });
+    var list = parts.length === 1
+      ? parts[0]
+      : parts.slice(0, -1).join(', ') + ' et ' + parts[parts.length - 1];
+    return 'Bonjour ! Je souhaiterais commander : ' + list + '. Merci !';
+  }
+
   function renderCart(){
     if(!cart.length){
       cartList.innerHTML = '<p class="cart-empty">Votre sélection est vide pour le moment.</p>';
-      return;
-    }
-    cartList.innerHTML = cart.map(function(it){
-      return '' +
-        '<div class="cart-item" data-id="' + it.id + '">' +
-          '<img src="' + it.img + '" alt="">' +
-          '<div class="cart-item-body">' +
-            '<div class="kicker"><i style="background:' + it.color + '"></i><span>' + it.catLabel + '</span></div>' +
-            '<b>' + it.title + '</b>' +
-            '<div class="cart-item-row">' +
-              '<div class="qty-stepper">' +
-                '<button type="button" data-step="-1">−</button>' +
-                '<span>' + it.qty + '</span>' +
-                '<button type="button" data-step="1">+</button>' +
+    } else {
+      cartList.innerHTML = cart.map(function(it){
+        return '' +
+          '<div class="cart-item" data-id="' + it.id + '">' +
+            '<img src="' + it.img + '" alt="">' +
+            '<div class="cart-item-body">' +
+              '<div class="kicker"><i style="background:' + it.color + '"></i><span>' + it.catLabel + '</span></div>' +
+              '<b>' + it.title + '</b>' +
+              '<div class="cart-item-row">' +
+                '<div class="qty-stepper">' +
+                  '<button type="button" data-step="-1">−</button>' +
+                  '<span>' + it.qty + '</span>' +
+                  '<button type="button" data-step="1">+</button>' +
+                '</div>' +
+                '<button type="button" class="cart-item-remove">Retirer</button>' +
               '</div>' +
-              '<button type="button" class="cart-item-remove">Retirer</button>' +
             '</div>' +
-          '</div>' +
-        '</div>';
-    }).join('');
+          '</div>';
+      }).join('');
+    }
+    cartMsg.textContent = buildOrderText();
+    cartCheckout.disabled = !cart.length;
   }
   function addToCart(id, title, catLabel, img, color, qty){
     var line = cart.find(function(it){ return it.id === id; });
@@ -888,6 +923,25 @@
   document.getElementById('cartBtn').addEventListener('click', openCartDrawer);
   document.getElementById('cartClose').addEventListener('click', closeCartDrawer);
   cartOverlay.addEventListener('click', closeCartDrawer);
+
+  // Checkout: copy the generated order message, then open the Instagram DM
+  // (the window.open happens synchronously in the click handler so it isn't
+  // blocked as a popup — the clipboard write is async and only affects the
+  // "copied" confirmation, never the navigation itself).
+  var cartCopied = document.getElementById('cartCopied');
+  var copiedTimer = null;
+  cartCheckout.addEventListener('click', function(){
+    if(!cart.length) return;
+    var text = buildOrderText();
+    window.open('https://ig.me/m/eva.bloom.bijoux', '_blank', 'noopener');
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){
+        cartCopied.classList.add('show');
+        clearTimeout(copiedTimer);
+        copiedTimer = setTimeout(function(){ cartCopied.classList.remove('show'); }, 4000);
+      }).catch(function(){ /* clipboard denied — the message stays visible above to copy by hand */ });
+    }
+  });
 
   // ---------- quick-view drawer ----------
   var overlay = document.getElementById('drawerOverlay');
