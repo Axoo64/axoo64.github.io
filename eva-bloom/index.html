@@ -159,12 +159,30 @@
   .nav-links a:hover::after{ right:0; }
   @media(min-width:900px){ .nav-links{ display:flex; } }
 
+  .nav-right{ display:flex; align-items:center; gap:10px; }
+
   .burger{ width:42px; height:42px; border-radius:50%; background:var(--card); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:5px; cursor:pointer; }
   @media(min-width:900px){ .burger{ display:none; } }
   .burger span{ width:16px; height:2px; background:var(--ink); transition:transform .3s ease, opacity .3s ease; }
   .burger.open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
   .burger.open span:nth-child(2){ opacity:0; }
   .burger.open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+
+  .cart-btn{
+    position:relative; width:42px; height:42px; border-radius:50%;
+    background:var(--card); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    transition:border-color .2s ease, transform .2s ease;
+  }
+  .cart-btn:hover{ border-color:var(--rose-deep); transform:translateY(-1px); }
+  .cart-btn svg{ width:18px; height:18px; stroke:var(--ink); fill:none; stroke-width:1.6; }
+  .cart-badge{
+    position:absolute; top:-4px; right:-4px; min-width:18px; height:18px; padding:0 4px;
+    border-radius:100px; background:var(--rose-deep); color:#fff;
+    font-size:.66rem; font-weight:700; display:flex; align-items:center; justify-content:center;
+    opacity:0; transform:scale(.5); transition:opacity .2s ease, transform .2s ease;
+  }
+  .cart-badge.show{ opacity:1; transform:scale(1); }
 
   .mobile-panel{
     position:fixed; top:0; left:0; right:0; z-index:490;
@@ -296,6 +314,40 @@
   .drawer-actions .btn{ width:100%; }
   .drawer-hint{ margin-top:16px; font-size:.76rem; color:var(--ink-soft); line-height:1.5; }
 
+  .qty-stepper{
+    display:inline-flex; align-items:center; gap:0; align-self:flex-start;
+    border:1px solid var(--line); border-radius:100px; overflow:hidden; margin-bottom:16px;
+  }
+  .qty-stepper button{
+    width:36px; height:36px; border:none; background:var(--card); cursor:pointer;
+    font-size:1.1rem; color:var(--ink); line-height:1;
+  }
+  .qty-stepper button:hover{ background:var(--cream-deep); }
+  .qty-stepper span{ width:34px; text-align:center; font-weight:700; font-size:.92rem; }
+
+  /* ============ CART DRAWER (reuses .drawer/.drawer-overlay positioning) ============ */
+  .cart-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 22px 16px; border-bottom:1px solid var(--line);
+  }
+  .cart-head h3{ font-size:1.2rem; }
+  .cart-list{ flex:1; overflow-y:auto; padding:6px 22px; }
+  .cart-empty{ padding:40px 0; text-align:center; color:var(--ink-soft); font-size:.9rem; }
+  .cart-item{ display:flex; gap:14px; padding:16px 0; border-bottom:1px solid var(--line); }
+  .cart-item img{ width:64px; height:64px; border-radius:12px; object-fit:cover; flex:0 0 auto; }
+  .cart-item-body{ flex:1; min-width:0; }
+  .cart-item-body .kicker{ display:flex; align-items:center; gap:6px; margin-bottom:3px; }
+  .cart-item-body .kicker i{ width:7px; height:7px; border-radius:50%; background:var(--tag); }
+  .cart-item-body .kicker span{ font-size:.62rem; letter-spacing:.08em; text-transform:uppercase; font-weight:700; color:var(--ink-soft); }
+  .cart-item-body b{ display:block; font-family:var(--serif); font-size:.95rem; font-weight:500; margin-bottom:8px; }
+  .cart-item-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .cart-item-row .qty-stepper{ margin-bottom:0; transform:scale(.85); transform-origin:left center; }
+  .cart-item-remove{ background:none; border:none; color:var(--ink-soft); font-size:.78rem; text-decoration:underline; cursor:pointer; text-underline-offset:2px; }
+  .cart-item-remove:hover{ color:var(--bloom); }
+  .cart-footer{ padding:18px 22px 26px; border-top:1px solid var(--line); }
+  .cart-footer p{ font-size:.78rem; color:var(--ink-soft); line-height:1.55; margin-bottom:14px; }
+  .cart-footer .btn{ width:100%; }
+
   /* ============ ATELIER — zigzag editorial rows ============ */
   .atelier{ padding:var(--gap-loose) 0; background:var(--cream-deep); }
   .atelier-top{ max-width:640px; margin:0 auto var(--gap-loose); text-align:center; }
@@ -394,7 +446,13 @@
       <a href="#instagram">Instagram</a>
       <a href="#contact">Contact</a>
     </div>
-    <div class="burger" id="burger"><span></span><span></span><span></span></div>
+    <div class="nav-right">
+      <button class="cart-btn" id="cartBtn" aria-label="Voir le panier">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h2l1.6 10.2a2 2 0 0 0 2 1.8h7.8a2 2 0 0 0 2-1.6L20.5 9H7"/><circle cx="10" cy="20.5" r="1.3" fill="var(--ink)" stroke="none"/><circle cx="17" cy="20.5" r="1.3" fill="var(--ink)" stroke="none"/></svg>
+        <span class="cart-badge" id="cartBadge">0</span>
+      </button>
+      <div class="burger" id="burger"><span></span><span></span><span></span></div>
+    </div>
   </div>
 </nav>
 
@@ -459,7 +517,7 @@
         </div>
       </div>
 
-      <div class="shop-card reveal" data-cat="bloom"
+      <div class="shop-card reveal" data-cat="bloom" data-id="boucles-bloom"
            data-title="Boucles Bloom" data-cat-label="Gamme Bloom"
            data-desc="Le rouge hibiscus, intense et solaire — l'hibiscus signature d'Eva Bloom, sculpté et peint à la main."
            style="--tag:var(--bloom);">
@@ -470,7 +528,7 @@
         </div>
       </div>
 
-      <div class="shop-card reveal" data-cat="sunset"
+      <div class="shop-card reveal" data-cat="sunset" data-id="boucles-sunset"
            data-title="Boucles Sunset" data-cat-label="Gamme Sunset"
            data-desc="Corail et orangé, comme un coucher de soleil sur la côte basque."
            style="--tag:var(--sunset);">
@@ -481,7 +539,7 @@
         </div>
       </div>
 
-      <div class="shop-card reveal" data-cat="flora"
+      <div class="shop-card reveal" data-cat="flora" data-id="boucles-flora"
            data-title="Boucles Flora" data-cat-label="Gamme Flora"
            data-desc="Le fuchsia, pour un accent plus vif — même fleur, teinte plus affirmée."
            style="--tag:var(--flora);">
@@ -492,7 +550,7 @@
         </div>
       </div>
 
-      <div class="shop-card reveal" data-cat="bloom"
+      <div class="shop-card reveal" data-cat="bloom" data-id="boucles-bloom-profil"
            data-title="Boucles Bloom, profil" data-cat-label="Gamme Bloom"
            data-desc="La même fleur rouge, portée — chaque exemplaire varie légèrement selon la peinture appliquée à la main."
            style="--tag:var(--bloom);">
@@ -503,7 +561,7 @@
         </div>
       </div>
 
-      <div class="shop-card reveal" data-cat="flora"
+      <div class="shop-card reveal" data-cat="flora" data-id="boucles-flora-portees"
            data-title="Boucles Flora, tenues en main" data-cat-label="Gamme Flora"
            data-desc="Version rose de la gamme Flora, tenue en main pour en montrer la taille réelle."
            style="--tag:var(--flora);">
@@ -514,7 +572,7 @@
         </div>
       </div>
 
-      <div class="shop-card reveal" data-cat="colliers"
+      <div class="shop-card reveal" data-cat="colliers" data-id="trio-colliers"
            data-title="Trio de colliers" data-cat-label="Colliers"
            data-desc="Les trois teintes de la collection montées en pendentif, sur cordon fin."
            style="--tag:var(--gold);">
@@ -525,7 +583,7 @@
         </div>
       </div>
 
-      <div class="shop-card reveal" data-cat="bloom"
+      <div class="shop-card reveal" data-cat="bloom" data-id="boucles-bloom-exterieur"
            data-title="Boucles Bloom, en extérieur" data-cat-label="Gamme Bloom"
            data-desc="La gamme Bloom photographiée en extérieur, à Biarritz."
            style="--tag:var(--bloom);">
@@ -551,11 +609,29 @@
     <p class="eyebrow" id="drawerCat">Gamme</p>
     <h3 id="drawerTitle">Titre</h3>
     <p id="drawerDesc">Description.</p>
+    <div class="qty-stepper" id="drawerQty">
+      <button type="button" data-step="-1" aria-label="Retirer une pièce">−</button>
+      <span id="drawerQtyVal">1</span>
+      <button type="button" data-step="1" aria-label="Ajouter une pièce">+</button>
+    </div>
     <div class="drawer-actions">
-      <a href="https://eva-bloom-bijoux.sumupstore.com" target="_blank" rel="noopener" class="btn btn-solid">Commander sur la boutique</a>
+      <button class="btn btn-solid" id="drawerAddToCart" type="button">Ajouter au panier</button>
       <a href="https://www.instagram.com/eva.bloom.bijoux/" target="_blank" rel="noopener" class="btn btn-line">Voir sur Instagram</a>
     </div>
     <p class="drawer-hint">Pièce faite main : de légères variations de peinture existent d'un exemplaire à l'autre.</p>
+  </div>
+</div>
+
+<div class="drawer-overlay" id="cartOverlay"></div>
+<div class="drawer" id="cartDrawer">
+  <div class="cart-head">
+    <h3>Votre sélection</h3>
+    <button class="drawer-close" id="cartClose" style="position:static;">✕</button>
+  </div>
+  <div class="cart-list" id="cartList"></div>
+  <div class="cart-footer">
+    <p>Eva Bloom étant une jeune marque, les prix et le paiement se font sur sa boutique en ligne — indiquez les pièces de votre sélection lors de la commande.</p>
+    <a href="https://eva-bloom-bijoux.sumupstore.com" target="_blank" rel="noopener" class="btn btn-solid">Aller à la boutique →</a>
   </div>
 </div>
 
@@ -700,6 +776,8 @@
   burger.addEventListener('click', function(){
     burger.classList.toggle('open');
     panel.classList.toggle('open');
+    closeCartDrawer();
+    closeDrawer();
   });
   panel.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', closeMenu); });
 
@@ -719,20 +797,124 @@
     });
   });
 
-  // quick-view drawer
+  // ---------- cart (localStorage-backed; no real payment — a static site
+  // has no backend, so "checkout" hands the selection off to Eva's real
+  // Sumup boutique rather than faking one) ----------
+  var CART_KEY = 'eva-bloom-cart';
+  var cart = [];
+  try {
+    var saved = localStorage.getItem(CART_KEY);
+    if(saved) cart = JSON.parse(saved) || [];
+  } catch(e){ cart = []; }
+
+  function saveCart(){
+    try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch(e){}
+  }
+  function cartCount(){
+    return cart.reduce(function(sum, it){ return sum + it.qty; }, 0);
+  }
+  var cartBadge = document.getElementById('cartBadge');
+  function updateCartBadge(){
+    var n = cartCount();
+    cartBadge.textContent = n;
+    cartBadge.classList.toggle('show', n > 0);
+  }
+  var cartList = document.getElementById('cartList');
+  function renderCart(){
+    if(!cart.length){
+      cartList.innerHTML = '<p class="cart-empty">Votre sélection est vide pour le moment.</p>';
+      return;
+    }
+    cartList.innerHTML = cart.map(function(it){
+      return '' +
+        '<div class="cart-item" data-id="' + it.id + '">' +
+          '<img src="' + it.img + '" alt="">' +
+          '<div class="cart-item-body">' +
+            '<div class="kicker"><i style="background:' + it.color + '"></i><span>' + it.catLabel + '</span></div>' +
+            '<b>' + it.title + '</b>' +
+            '<div class="cart-item-row">' +
+              '<div class="qty-stepper">' +
+                '<button type="button" data-step="-1">−</button>' +
+                '<span>' + it.qty + '</span>' +
+                '<button type="button" data-step="1">+</button>' +
+              '</div>' +
+              '<button type="button" class="cart-item-remove">Retirer</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+    }).join('');
+  }
+  function addToCart(id, title, catLabel, img, color, qty){
+    var line = cart.find(function(it){ return it.id === id; });
+    if(line) line.qty += qty;
+    else cart.push({ id:id, title:title, catLabel:catLabel, img:img, color:color, qty:qty });
+    saveCart(); updateCartBadge(); renderCart();
+  }
+  function setQty(id, delta){
+    var line = cart.find(function(it){ return it.id === id; });
+    if(!line) return;
+    line.qty += delta;
+    if(line.qty <= 0) cart = cart.filter(function(it){ return it.id !== id; });
+    saveCart(); updateCartBadge(); renderCart();
+  }
+  function removeFromCart(id){
+    cart = cart.filter(function(it){ return it.id !== id; });
+    saveCart(); updateCartBadge(); renderCart();
+  }
+  cartList.addEventListener('click', function(e){
+    var itemEl = e.target.closest('.cart-item');
+    if(!itemEl) return;
+    var id = itemEl.dataset.id;
+    if(e.target.matches('[data-step]')) setQty(id, parseInt(e.target.dataset.step, 10));
+    else if(e.target.classList.contains('cart-item-remove')) removeFromCart(id);
+  });
+  updateCartBadge();
+  renderCart();
+
+  // cart drawer open/close
+  var cartOverlay = document.getElementById('cartOverlay');
+  var cartDrawer = document.getElementById('cartDrawer');
+  function openCartDrawer(){
+    closeDrawer();
+    closeMenu();
+    cartOverlay.classList.add('open');
+    cartDrawer.classList.add('open');
+  }
+  function closeCartDrawer(){
+    cartOverlay.classList.remove('open');
+    cartDrawer.classList.remove('open');
+  }
+  document.getElementById('cartBtn').addEventListener('click', openCartDrawer);
+  document.getElementById('cartClose').addEventListener('click', closeCartDrawer);
+  cartOverlay.addEventListener('click', closeCartDrawer);
+
+  // ---------- quick-view drawer ----------
   var overlay = document.getElementById('drawerOverlay');
   var drawer = document.getElementById('drawer');
   var dImg = document.getElementById('drawerImg');
   var dTitle = document.getElementById('drawerTitle');
   var dDesc = document.getElementById('drawerDesc');
   var dCat = document.getElementById('drawerCat');
+  var dQtyWrap = document.getElementById('drawerQty');
+  var dQtyVal = document.getElementById('drawerQtyVal');
+  var dAddBtn = document.getElementById('drawerAddToCart');
+  var currentCard = null;
+  var currentQty = 1;
+
   function openDrawer(card){
     var img = card.querySelector('img');
+    currentCard = card;
+    currentQty = 1;
+    dQtyVal.textContent = currentQty;
     dImg.src = img.src;
     dImg.alt = img.alt;
     dTitle.textContent = card.dataset.title;
     dDesc.textContent = card.dataset.desc;
     dCat.textContent = card.dataset.catLabel;
+    var orderable = !!card.dataset.id;
+    dQtyWrap.style.display = orderable ? 'inline-flex' : 'none';
+    dAddBtn.style.display = orderable ? '' : 'none';
+    closeCartDrawer();
     overlay.classList.add('open');
     drawer.classList.add('open');
   }
@@ -743,7 +925,23 @@
   cards.forEach(function(c){ c.addEventListener('click', function(){ openDrawer(c); }); });
   document.getElementById('drawerClose').addEventListener('click', closeDrawer);
   overlay.addEventListener('click', closeDrawer);
-  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeDrawer(); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){ closeDrawer(); closeCartDrawer(); }
+  });
+
+  dQtyWrap.addEventListener('click', function(e){
+    if(!e.target.matches('[data-step]')) return;
+    currentQty = Math.max(1, currentQty + parseInt(e.target.dataset.step, 10));
+    dQtyVal.textContent = currentQty;
+  });
+  dAddBtn.addEventListener('click', function(){
+    if(!currentCard || !currentCard.dataset.id) return;
+    var img = currentCard.querySelector('img');
+    var color = getComputedStyle(currentCard).getPropertyValue('--tag').trim() || 'var(--rose-deep)';
+    addToCart(currentCard.dataset.id, currentCard.dataset.title, currentCard.dataset.catLabel, img.src, color, currentQty);
+    closeDrawer();
+    openCartDrawer();
+  });
 
   // reveal on scroll
   var reveals = document.querySelectorAll('.reveal');
