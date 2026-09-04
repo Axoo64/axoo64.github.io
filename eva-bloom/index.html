@@ -141,10 +141,14 @@
     position:sticky; top:0; z-index:500;
     background:var(--cream);
     border-bottom:1px solid var(--line);
-    padding:16px 0; transition:padding .3s ease, box-shadow .3s ease;
+    /* Fixed height (matches --nav-h) so the sticky filter-bar below, which
+       docks at top:var(--nav-h), never opens a gap under a shrinking nav —
+       only the shadow changes on scroll, not the box height. */
+    height:var(--nav-h); display:flex; align-items:center;
+    transition:box-shadow .3s ease;
   }
-  nav.top .wrap{ display:flex; align-items:center; justify-content:space-between; }
-  nav.top.scrolled{ padding:10px 0; box-shadow:0 8px 24px -18px rgba(56,42,40,.28); }
+  nav.top .wrap{ display:flex; align-items:center; justify-content:space-between; width:100%; }
+  nav.top.scrolled{ box-shadow:0 8px 24px -18px rgba(56,42,40,.28); }
   .brand{ display:flex; align-items:center; gap:10px; }
   .brand img{ width:40px; height:40px; border-radius:50%; }
   .brand span{ font-family:var(--serif); font-size:1.1rem; color:var(--ink); }
