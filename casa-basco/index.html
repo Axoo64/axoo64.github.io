@@ -32,6 +32,8 @@
     -webkit-font-smoothing:antialiased; overflow-x:hidden;
   }
   body.pz-loading{overflow:hidden; height:100vh;}
+  html.cb-skip-intro #preloader{display:none !important;}
+  html.cb-skip-intro body.pz-loading{overflow:visible; height:auto;}
   h1,h2,h3{font-family:'Fraunces',serif; margin:0; line-height:1.08;}
   p{margin:0;}
   a{color:inherit; text-decoration:none;}
@@ -323,6 +325,19 @@
 </style>
 </head>
 <body class="pz-loading">
+<script>
+(function(){
+  try{
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var seen = localStorage.getItem('cb_seen_intro') === '1';
+    if(seen || reduceMotion){
+      document.documentElement.classList.add('cb-skip-intro');
+    } else {
+      localStorage.setItem('cb_seen_intro', '1');
+    }
+  }catch(e){}
+})();
+</script>
 
 <div id="preloader">
   <div class="pz-stage">
@@ -528,6 +543,13 @@
 (function(){
   var preloader = document.getElementById('preloader');
   var body = document.body;
+
+  if(document.documentElement.classList.contains('cb-skip-intro')){
+    body.classList.remove('pz-loading');
+    if(preloader && preloader.parentNode) preloader.parentNode.removeChild(preloader);
+    return;
+  }
+
   setTimeout(function(){
     preloader.classList.add('pz-bam');
     preloader.classList.add('pz-gone');
